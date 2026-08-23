@@ -11,10 +11,11 @@ public class PlayerScript : MonoBehaviour
     public Vector2 InitialPlayerPosition = new Vector2(0, 0);
     public float RollDuration = 0.5f;
     public float initialLockDuration = 0.5f;
+    public float fallDuration = 2f;
     private float FloorUnit = 1;
     private bool IsRolling { get; set; }
     private Coroutine rollCoroutine;
-    private Orientation PlayerOrientation { get; set; }
+    internal Orientation PlayerOrientation { get; set; }
 
     private Rigidbody rb;
 
@@ -64,13 +65,8 @@ public class PlayerScript : MonoBehaviour
 
     private IEnumerator DelayRollingAllowed()
     {
-        float elapsedTime = 0f;
+        yield return new WaitForSeconds(initialLockDuration);
 
-        while (elapsedTime < initialLockDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
         ConstrainRB();
         rollingAllowed = true;
     }
@@ -137,22 +133,45 @@ public class PlayerScript : MonoBehaviour
             rb.AddForce(Vector3.down * force, ForceMode.Impulse);
         }
 
-        StartCoroutine(Restart());
+        yield return new WaitForSeconds(fallDuration);
+
+        Restart();
     }
 
-    private IEnumerator Restart()
+    private void Restart()
     {
-        float restartDelay = 2f;
-
-        float elapsedTime = 0f;
-
-        while (elapsedTime < restartDelay)
-        {
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
         Initialize();
         BeginGame();
+    }
+
+    public void Success()
+    {
+        if (gameOver)
+            return;
+
+        gameOver = true;
+        rollingAllowed = false;
+
+        StartCoroutine(SuccessCoroutine());
+    }
+
+    private IEnumerator SuccessCoroutine()
+    {
+        if (rollCoroutine != null)
+        {
+            yield return rollCoroutine;
+        }
+
+        UnconstrainRB();
+        rb.AddForce(Vector3.down * force, ForceMode.Impulse);
+        yield return new WaitForSeconds(fallDuration);
+
+        Bravo();
+    }
+
+    private void Bravo()
+    {
+        Debug.Log("Floor cleared!!!");
     }
     private void RollForward(InputAction.CallbackContext context)
     {
