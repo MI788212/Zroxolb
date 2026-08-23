@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5494310648762178757}
   - component: {fileID: 222352094173822790}
   - component: {fileID: 3604749711143370402}
+  - component: {fileID: 1501618905142939788}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -173,8 +174,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerScript
   InitialPlayerPosition: {x: 0, y: 0}
-  RollDuration: 0.5
+  RollDuration: 0.2
   rollForward: {fileID: -1753154209601861827, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
   rollBack: {fileID: 2820822244389929930, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
   rollLeft: {fileID: 4493800428232453159, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
   rollRight: {fileID: 7032555096487140133, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
+  gravity: -10
+  force: 100
+--- !u!54 &1501618905142939788
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3277886882383705653}
+  serializedVersion: 5
+  m_Mass: 10
+  m_LinearDamping: 0
+  m_AngularDamping: 0
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 0
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
