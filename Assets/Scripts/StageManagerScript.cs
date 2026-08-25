@@ -1,4 +1,5 @@
 using Assets.Scripts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,6 +15,9 @@ public class StageManagerScript : MonoBehaviour
 
     private PlayerScript playerScript;
 
+    public event Action NextStageIntermission;
+    public event Action LastStageCleared;
+
     private void Awake()
     {
         Physics.gravity = new Vector3(0, gravity, 0);
@@ -24,15 +28,9 @@ public class StageManagerScript : MonoBehaviour
 
         playerScript.PlayerFellOffPlatform += GameOver;
         playerScript.PlayerFellIntoHole += StageCleared;
-
-        CurrentStageIndex = 0;
-        CurrentStage = Stages.ElementAt(CurrentStageIndex);
-        InitialPlayerPosition = CurrentStage.GetInitialPlayerPosition();
-
-        LoadStage();
     }
 
-    private void LoadStage()
+    public void LoadStage()
     {
         Destroy(transform.GetChild(0).gameObject);
 
@@ -45,7 +43,7 @@ public class StageManagerScript : MonoBehaviour
     private void LoadNextStage()
     {
         NextStage();
-        LoadStage();
+        NextStageIntermission?.Invoke();
     }
 
     private void NextStage()
@@ -55,8 +53,21 @@ public class StageManagerScript : MonoBehaviour
         if (CurrentStageIndex >= Stages.Count())
         {
             CurrentStageIndex--;
-            Debug.Log("Trying to move onto next stage, but this stage is the last.");
+            Debug.Log("trying to move onto next stage, but this is the last.");
         }
+
+        CurrentStage = Stages.ElementAt(CurrentStageIndex);
+        InitialPlayerPosition = CurrentStage.GetInitialPlayerPosition();
+    }
+
+    public void LoadStage(int stageIndex)
+    {
+        SetStage(stageIndex);
+        LoadStage();
+    }
+    private void SetStage(int stageIndex)
+    {
+        CurrentStageIndex = stageIndex;
 
         CurrentStage = Stages.ElementAt(CurrentStageIndex);
         InitialPlayerPosition = CurrentStage.GetInitialPlayerPosition();
@@ -71,6 +82,12 @@ public class StageManagerScript : MonoBehaviour
     private void StageCleared()
     {
         Debug.Log("Stage cleared.");
+        if(CurrentStageIndex== Stages.Count - 1)
+        {
+            Debug.Log("last stage cleared");
+            LastStageCleared?.Invoke();
+            return;
+        }
         LoadNextStage();
     }
 }
