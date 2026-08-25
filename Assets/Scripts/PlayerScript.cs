@@ -8,59 +8,55 @@ using UnityEngine.UIElements;
 
 public class PlayerScript : MonoBehaviour
 {
-    public Vector2 InitialPlayerPosition = new Vector2(0, 0);
     public float RollDuration = 0.5f;
+    private bool rollingAllowed { get; set; }
+    private bool IsRolling { get; set; }
+
+    private float FloorUnit = 1;
+
     public float initialLockDuration = 0.5f;
     public float fallDuration = 2f;
-    private float FloorUnit = 1;
-    private bool IsRolling { get; set; }
+
     private Coroutine rollCoroutine;
     internal Orientation PlayerOrientation { get; set; }
 
     private Rigidbody rb;
-
-    private bool gameOver { get; set; }
-    private bool rollingAllowed { get; set; }
 
     public InputActionReference rollForward;
     public InputActionReference rollBack;
     public InputActionReference rollLeft;
     public InputActionReference rollRight;
 
-    public float gravity = -10f;
-    public float force = 5f;
+    public float force = 5f; // the amount of force with which you push the block when it falls off the platform
+    private bool wholeBlockFall = false; //when falling (fail), is the whole block off the platform or just half of it; important to make physics of falling look correct
 
-    private bool wholeBlockFalling = false;
+    public event Action PlayerFellOffPlatform;
+    public event Action PlayerFellIntoHole;
 
     private void Awake()
     {
-        Physics.gravity = new Vector3(0, gravity, 0);
         rb = GetComponent<Rigidbody>();
-        Initialize();
     }
 
-    private void Initialize()
+    public void StartPlayer(Vector2 initialPlayerPosition)
+    {
+        Initialize(initialPlayerPosition);
+
+        UnconstrainRB();
+        StartCoroutine(DelayRollingAllowed());
+    }
+
+    public void Initialize(Vector2 initialPlayerPosition)
     {
         ConstrainRB();
-        transform.position = new Vector3(InitialPlayerPosition.x, 2, InitialPlayerPosition.y);
+
+        transform.position = new Vector3(initialPlayerPosition.x, 2, initialPlayerPosition.y);
         transform.eulerAngles = new Vector3(0, 0, 0);
         PlayerOrientation = Orientation.Y;
 
         IsRolling = false;
-        gameOver = false;
         rollingAllowed = false;
-        wholeBlockFalling = false;
-    }
-
-    private void Start()
-    {
-        BeginGame();
-    }
-
-    private void BeginGame()
-    {
-        UnconstrainRB();
-        StartCoroutine(DelayRollingAllowed());
+        wholeBlockFall = false;
     }
 
     private IEnumerator DelayRollingAllowed()
@@ -73,17 +69,19 @@ public class PlayerScript : MonoBehaviour
 
     private void ConstrainRB()
     {
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
         rb.constraints = RigidbodyConstraints.FreezeAll;
         rb.useGravity = false;
         rb.isKinematic = true;
     }
+
     private void UnconstrainRB()
     {
         rb.constraints = RigidbodyConstraints.None;
         rb.useGravity = true;
         rb.isKinematic = false;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
     }
 
     private void OnEnable()
@@ -93,6 +91,7 @@ public class PlayerScript : MonoBehaviour
         rollLeft.action.started += RollLeft;
         rollRight.action.started += RollRight;
     }
+
     private void OnDisable()
     {
         rollForward.action.started -= RollForward;
@@ -101,21 +100,24 @@ public class PlayerScript : MonoBehaviour
         rollRight.action.started -= RollRight;
     }
 
-    public void GameOver(Vector3 emptyTilePosition)
+    public void HandlePlayerFall(Vector3 emptyTilePosition)
     {
-        if (gameOver)
+        if (rollingAllowed)
         {
-            wholeBlockFalling = true;
+            rollingAllowed = false;
+        }
+        else
+        {
+            wholeBlockFall = true;
             return;
         }
 
-        gameOver = true;
         rollingAllowed = false;
 
-        StartCoroutine(GameOverCoroutine(emptyTilePosition));
+        StartCoroutine(FallOffPlatform(emptyTilePosition));
     }
 
-    public IEnumerator GameOverCoroutine(Vector3 emptyTilePosition)
+    public IEnumerator FallOffPlatform(Vector3 emptyTilePosition)
     {
 
         if (rollCoroutine != null)
@@ -124,38 +126,31 @@ public class PlayerScript : MonoBehaviour
         }
 
         UnconstrainRB();
-        if (!wholeBlockFalling)
+        if (wholeBlockFall)
         {
-            rb.AddForceAtPosition(Vector3.down * force, emptyTilePosition + Vector3.up * 0.5f, ForceMode.Impulse);
+            rb.AddForce(Vector3.down * force, ForceMode.Impulse);
         }
         else
         {
-            rb.AddForce(Vector3.down * force, ForceMode.Impulse);
+            rb.AddForceAtPosition(Vector3.down * force, emptyTilePosition + Vector3.up * 0.5f, ForceMode.Impulse);
         }
 
         yield return new WaitForSeconds(fallDuration);
 
-        Restart();
+        PlayerFellOffPlatform?.Invoke();
     }
 
-    private void Restart()
+    public void HandleFallIntoHole()
     {
-        Initialize();
-        BeginGame();
-    }
-
-    public void Success()
-    {
-        if (gameOver)
+        if (!rollingAllowed)
             return;
 
-        gameOver = true;
         rollingAllowed = false;
 
-        StartCoroutine(SuccessCoroutine());
+        StartCoroutine(FallIntoHole());
     }
 
-    private IEnumerator SuccessCoroutine()
+    private IEnumerator FallIntoHole()
     {
         if (rollCoroutine != null)
         {
@@ -166,13 +161,9 @@ public class PlayerScript : MonoBehaviour
         rb.AddForce(Vector3.down * force, ForceMode.Impulse);
         yield return new WaitForSeconds(fallDuration);
 
-        Bravo();
+        PlayerFellIntoHole?.Invoke();
     }
 
-    private void Bravo()
-    {
-        Debug.Log("Floor cleared!!!");
-    }
     private void RollForward(InputAction.CallbackContext context)
     {
         Roll(Vector3.forward);
@@ -194,10 +185,10 @@ public class PlayerScript : MonoBehaviour
 
     private void Roll(Vector3 rollDirection)
     {
-        if (gameOver||!rollingAllowed)
+        if (!rollingAllowed)
             return;
 
-        Debug.Log("Roll!");
+        //Debug.Log("Roll!");
         rollCoroutine = StartCoroutine(RollToDirection(rollDirection));
     }
 
@@ -205,7 +196,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (!IsRolling)
         {
-            Debug.Log("Rolling starts!");
+            //Debug.Log("Rolling starts!");
             IsRolling = true;
 
             float angle = 90f;
@@ -230,7 +221,7 @@ public class PlayerScript : MonoBehaviour
 
             Correction();
 
-            Debug.Log("Rolling ends.");
+            //Debug.Log("Rolling ends.");
             IsRolling = false;
         }
     }

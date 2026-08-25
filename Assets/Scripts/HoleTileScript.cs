@@ -14,7 +14,7 @@ public class HoleTileScript : MonoBehaviour
         {
             if (playerScript.PlayerOrientation == Orientation.Y)
             {
-                playerScript.Success();
+                playerScript.HandleFallIntoHole();
             }
         }
     }

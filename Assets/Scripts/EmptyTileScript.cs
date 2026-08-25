@@ -12,7 +12,7 @@ public class EmptyTileScript : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            playerScript.GameOver(transform.position);
+            playerScript.HandlePlayerFall(transform.position);
         }
     }
 }
