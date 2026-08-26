@@ -43,7 +43,6 @@ GameObject:
   - component: {fileID: 655610656180587372}
   - component: {fileID: 782493076507205349}
   - component: {fileID: 4137451920211490447}
-  - component: {fileID: 3457073836510848390}
   m_Layer: 0
   m_Name: ToggleTile
   m_TagString: NormalTile
@@ -145,15 +144,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9, y: 1, z: 0.9}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3457073836510848390
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5756578191923532033}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d09546c906d740f4b91814bf67f1cc53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TileScript
