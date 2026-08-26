@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using Assets.Scripts;
 
 public class PlayerScript : MonoBehaviour
 {
@@ -16,8 +17,6 @@ public class PlayerScript : MonoBehaviour
 
     public float initialLockDuration = 0.5f;
     public float fallDuration = 2f;
-
-    private Coroutine rollCoroutine;
     internal Orientation PlayerOrientation { get; set; }
 
     private Rigidbody rb;
@@ -28,14 +27,22 @@ public class PlayerScript : MonoBehaviour
     public InputActionReference rollRight;
 
     public float force = 5f; // the amount of force with which you push the block when it falls off the platform
-    private bool wholeBlockFall = false; //when falling (fail), is the whole block off the platform or just half of it; important to make physics of falling look correct
 
     public event Action PlayerFellOffPlatform;
     public event Action PlayerFellIntoHole;
 
+    private GameObject cube1;
+    private GameObject cube2;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+    }
+
+    private void Start()
+    {
+        cube1 = transform.Find("Cube1").gameObject;
+        cube2 = transform.Find("Cube2").gameObject;
     }
 
     public void StartPlayer(Vector2 initialPlayerPosition)
@@ -56,7 +63,6 @@ public class PlayerScript : MonoBehaviour
 
         IsRolling = false;
         rollingAllowed = false;
-        wholeBlockFall = false;
     }
 
     private IEnumerator DelayRollingAllowed()
@@ -100,63 +106,49 @@ public class PlayerScript : MonoBehaviour
         rollRight.action.started -= RollRight;
     }
 
-    public void HandlePlayerFall(Vector3 emptyTilePosition)
+    public IEnumerator FallOffPlatform(bool cube1supported, bool cube2supported)
     {
-        if (rollingAllowed)
-        {
-            rollingAllowed = false;
-        }
-        else
-        {
-            wholeBlockFall = true;
-            return;
-        }
-
+        Debug.Log("FallOffPlatform");
         rollingAllowed = false;
 
-        StartCoroutine(FallOffPlatform(emptyTilePosition));
-    }
-
-    public IEnumerator FallOffPlatform(Vector3 emptyTilePosition)
-    {
-
-        if (rollCoroutine != null)
+        if (cube1supported||cube2supported)
         {
-            yield return rollCoroutine;
+            if (cube2supported)
+            {
+                GameObject tmp = cube2;
+                cube2 = cube1;
+                cube1 = tmp;
+            }
+            float angle = 90;
+            float elapsedTime = 0f;
+            Vector3 pivotOfRotation = (cube1.transform.position + cube2.transform.position) / 2 + Vector3.down * FloorUnit / 2;
+            Vector3 axisOfRotation = Quaternion.Euler(0, 90, 0)*(cube2.transform.position - cube1.transform.position);
+
+            while (elapsedTime < RollDuration)
+            {
+                float previousElapsedTime = elapsedTime;
+                elapsedTime = Mathf.Min(elapsedTime + Time.deltaTime, RollDuration);
+
+                float deltaAngle = angle *
+                    ((elapsedTime - previousElapsedTime) / RollDuration);
+
+                transform.RotateAround(pivotOfRotation, axisOfRotation, deltaAngle);
+
+                yield return null;
+            }
         }
 
         UnconstrainRB();
-        if (wholeBlockFall)
-        {
-            rb.AddForce(Vector3.down * force, ForceMode.Impulse);
-        }
-        else
-        {
-            rb.AddForceAtPosition(Vector3.down * force, emptyTilePosition + Vector3.up * 0.5f, ForceMode.Impulse);
-        }
+
+        rb.AddForce(Vector3.down * force, ForceMode.Impulse);
 
         yield return new WaitForSeconds(fallDuration);
 
         PlayerFellOffPlatform?.Invoke();
     }
-
-    public void HandleFallIntoHole()
-    {
-        if (!rollingAllowed)
-            return;
-
-        rollingAllowed = false;
-
-        StartCoroutine(FallIntoHole());
-    }
-
     private IEnumerator FallIntoHole()
     {
-        if (rollCoroutine != null)
-        {
-            yield return rollCoroutine;
-        }
-
+        rollingAllowed = false;
         UnconstrainRB();
         rb.AddForce(Vector3.down * force, ForceMode.Impulse);
         yield return new WaitForSeconds(fallDuration);
@@ -187,9 +179,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (!rollingAllowed)
             return;
-
-        //Debug.Log("Roll!");
-        rollCoroutine = StartCoroutine(RollToDirection(rollDirection));
+        StartCoroutine(RollToDirection(rollDirection));
     }
 
     private IEnumerator RollToDirection(Vector3 rollDirection)
@@ -221,9 +211,111 @@ public class PlayerScript : MonoBehaviour
 
             Correction();
 
-            //Debug.Log("Rolling ends.");
+            CheckTiles();
+            
             IsRolling = false;
         }
+    }
+
+    private void CheckTiles()
+    {
+        TileCheckResult tcr1 = CheckTilesUnderCube(cube1.transform);
+        TileCheckResult tcr2 = CheckTilesUnderCube(cube2.transform);
+
+        // events that can only be triggered if the player orientation is Y
+        if(PlayerOrientation == Orientation.Y)
+        {
+            if(tcr1.holeTile != null)
+            {
+                StartCoroutine(FallIntoHole());
+                return;
+            }
+
+            if(tcr1.weakTile != null)
+            {
+                WeakTileBreakAndFall(tcr1.weakTile);
+                return;
+            }
+
+            if(tcr1.switchX != null)
+            {
+                ToggleSwitchTile(tcr1.switchX);
+                return;
+            }
+        }
+        
+        bool cube1supported = TileSupportsCube(tcr1);
+        bool cube2supported = TileSupportsCube(tcr2);
+
+        if(tcr1.switchO != null)
+        {
+            ToggleSwitchTile(tcr1.switchO);
+        }
+
+        if (tcr2.switchO != null)
+        {
+            if(PlayerOrientation != Orientation.Y)
+                ToggleSwitchTile(tcr2.switchO);
+        }
+
+        Debug.Log(cube1supported +" "+ cube2supported);
+        if((!cube1supported) || (!cube2supported))
+        {
+            StartCoroutine(FallOffPlatform(cube1supported, cube2supported));
+        }
+    }
+
+    private bool TileSupportsCube(TileCheckResult tcr)
+    {
+        return tcr.normalTile != null || tcr.toggleTile != null || tcr.weakTile != null|| tcr.holeTile != null;
+    }
+
+    private void ToggleSwitchTile(GameObject switchObject)
+    {
+        switchObject.GetComponent<SwitchScript>().Toggle();
+    }
+
+    private void WeakTileBreakAndFall(GameObject weakTile)
+    {
+        weakTile.AddComponent<Rigidbody>();
+        StartCoroutine(FallOffPlatform(false, false));
+    }
+
+    private TileCheckResult CheckTilesUnderCube(Transform cube)
+    {
+        TileCheckResult tileCheckResult = new TileCheckResult();
+
+        RaycastHit[] hits = Physics.RaycastAll(cube.position, Vector3.down, 5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
+        foreach (RaycastHit hit in hits)
+        {
+            string hitTag = hit.transform.tag;
+            switch (hitTag)
+            {
+                case "NormalTile":
+                    tileCheckResult.normalTile = hit.transform.gameObject;
+                    break;
+                case "WeakTile":
+                    tileCheckResult.weakTile = hit.transform.gameObject;
+                    break;
+                case "SwitchX":
+                    tileCheckResult.switchX = hit.transform.gameObject;
+                    break;
+                case "SwitchO":
+                    tileCheckResult.switchO = hit.transform.gameObject;
+                    break;
+                case "HoleTile":
+                    Debug.Log("HoleTile detected");
+                    tileCheckResult.holeTile = hit.transform.gameObject;
+                    break;
+                case "ToggleTile":
+                    tileCheckResult.toggleTile = hit.transform.gameObject;
+                    break;
+                default:
+                    //Debug.Log("Raycast hit smth else: " + hit.transform.name);
+                    break;
+            }
+        }
+        return tileCheckResult;
     }
     private Vector3 GetAxisOfRotation(Vector3 rollDirection)
     {

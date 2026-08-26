@@ -32,7 +32,10 @@ public class StageManagerScript : MonoBehaviour
 
     public void LoadStage()
     {
-        Destroy(transform.GetChild(0).gameObject);
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
 
         GameObject stage = Instantiate(CurrentStage.StagePrefab);
         stage.transform.SetParent(transform);
