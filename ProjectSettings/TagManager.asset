@@ -6,6 +6,11 @@ TagManager:
   tags:
   - StageManager
   - ScreenManager
+  - NormalTile
+  - HoleTile
+  - WeakTile
+  - SwitchX
+  - SwitchO
   layers:
   - Default
   - TransparentFX
