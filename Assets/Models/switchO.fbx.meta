@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 5b7764e5d3f03e540bd900e23a1a81dd
+guid: 1c3f8e1ded8d8ef44a29a574167e811f
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: SwitchOMAT
-    second: {fileID: 2100000, guid: 0811db282dcc93c4e8cdc9efea2a061b, type: 2}
+    second: {fileID: 2100000, guid: ada78b9bb0f7a8b4986bd15325e6fdd2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

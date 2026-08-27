@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: switchXMAT
-    second: {fileID: 2100000, guid: 428ad0510d356664caeababf93952655, type: 2}
+    second: {fileID: 2100000, guid: 0edd08e243c61f445a8ad8ab14c8b817, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
