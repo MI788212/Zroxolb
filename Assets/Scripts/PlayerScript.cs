@@ -17,6 +17,9 @@ public class PlayerScript : MonoBehaviour
 
     public float initialLockDuration = 0.5f;
     public float fallDuration = 2f;
+    public float startFallHeight = 10;
+    public float gravity = -40f;
+
     internal Orientation PlayerOrientation { get; set; }
 
     private Rigidbody rb;
@@ -37,6 +40,8 @@ public class PlayerScript : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        Physics.gravity = new Vector3(0, gravity, 0);
+        initialLockDuration = Mathf.Sqrt(2f * startFallHeight / Mathf.Abs(gravity));
     }
 
     private void Start()
@@ -57,7 +62,7 @@ public class PlayerScript : MonoBehaviour
     {
         ConstrainRB();
 
-        transform.position = new Vector3(initialPlayerPosition.x, 2, initialPlayerPosition.y);
+        transform.position = new Vector3(initialPlayerPosition.x, startFallHeight , initialPlayerPosition.y);
         transform.eulerAngles = new Vector3(0, 0, 0);
         PlayerOrientation = Orientation.Y;
 
