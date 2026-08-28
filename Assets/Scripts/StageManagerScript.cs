@@ -11,7 +11,6 @@ public class StageManagerScript : MonoBehaviour
     public Stage CurrentStage;
     public Vector2 InitialPlayerPosition = new Vector2(0, 0);
 
-    public float gravity = -25f;
 
     private PlayerScript playerScript;
 
@@ -20,7 +19,6 @@ public class StageManagerScript : MonoBehaviour
 
     private void Awake()
     {
-        Physics.gravity = new Vector3(0, gravity, 0);
     }
     void Start()
     {
@@ -68,7 +66,7 @@ public class StageManagerScript : MonoBehaviour
         SetStage(stageIndex);
         LoadStage();
     }
-    private void SetStage(int stageIndex)
+    public void SetStage(int stageIndex)
     {
         CurrentStageIndex = stageIndex;
 

@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class ScreenManagerScript : MonoBehaviour
@@ -13,6 +14,8 @@ public class ScreenManagerScript : MonoBehaviour
     public GameObject gameScreen;
 
     public float interStageDuration = 2f;
+    public TMP_Text interStageText;
+    public TMP_Text menuStageText;
 
     private StageManagerScript stageManagerScript;
 
@@ -24,35 +27,46 @@ public class ScreenManagerScript : MonoBehaviour
 
         ShowScreen(titleScreen);
 
-        stageManagerScript.NextStageIntermission += InterStage;
+        stageManagerScript.NextStageIntermission += StageIntermission;
         stageManagerScript.LastStageCleared += Congratulations;
     }
 
     public void StartNewGame()
     {
-        stageManagerScript.LoadStage(0);
-
-        ShowScreen(gameScreen);
+        LoadStage(0);
     }
 
     public void LoadStage(int stageIndex)
     {
-        stageManagerScript.LoadStage(stageIndex);
+        if (stageIndex >= stageManagerScript.Stages.Count)
+        {
+            return;
+        }
 
-        ShowScreen(gameScreen);
+        stageManagerScript.SetStage(stageIndex);
+
+        StageIntermission();
     }
 
-    private void InterStage()
+    private void StageIntermission()
     {
+        StartCoroutine(InterStage());
+    }
+    private IEnumerator InterStage()
+    {
+        updateScreenInfo();
+
         ShowScreen(interStageScreen);
-        StartCoroutine(DelayLoadNextStage());
-    }
-
-    private IEnumerator DelayLoadNextStage()
-    {
         yield return new WaitForSeconds(interStageDuration);
+
         ShowScreen(gameScreen);
         stageManagerScript.LoadStage();
+    }
+
+    private void updateScreenInfo()
+    {
+        interStageText.text = "Stage " + stageManagerScript.CurrentStageIndex;
+        menuStageText.text = "Stage " + stageManagerScript.CurrentStageIndex;
     }
 
     private void Congratulations()
