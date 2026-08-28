@@ -12,6 +12,7 @@ TagManager:
   - SwitchX
   - SwitchO
   - Button
+  - Star
   layers:
   - Default
   - TransparentFX

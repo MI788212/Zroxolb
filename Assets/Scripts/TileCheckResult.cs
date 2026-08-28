@@ -15,5 +15,6 @@ namespace Assets.Scripts
         public GameObject switchO;
         public GameObject holeTile;
         public GameObject toggleTile;
+        public GameObject star;
     }
 }
