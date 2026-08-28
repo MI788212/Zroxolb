@@ -30,10 +30,7 @@ public class StageManagerScript : MonoBehaviour
 
     public void LoadStage()
     {
-        foreach (Transform child in transform)
-        {
-            Destroy(child.gameObject);
-        }
+        ClearStage();
 
         GameObject stage = Instantiate(CurrentStage.StagePrefab);
         stage.transform.SetParent(transform);
@@ -89,6 +86,15 @@ public class StageManagerScript : MonoBehaviour
             LastStageCleared?.Invoke();
             return;
         }
+
         LoadNextStage();
+    }
+
+    private void ClearStage()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }
