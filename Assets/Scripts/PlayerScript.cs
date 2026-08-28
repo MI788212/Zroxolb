@@ -127,7 +127,7 @@ public class PlayerScript : MonoBehaviour
 
     public IEnumerator FallOffPlatform(bool cube1supported, bool cube2supported)
     {
-        Debug.Log("FallOffPlatform");
+        //Debug.Log("FallOffPlatform");
         rollingAllowed = false;
 
         if (cube1supported||cube2supported)
@@ -279,6 +279,7 @@ public class PlayerScript : MonoBehaviour
 
             if(tcr1.switchX != null)
             {
+                //Debug.Log("Toggle x switch pls");
                 ToggleSwitchTile(tcr1.switchX);
                 return;
             }
@@ -379,20 +380,16 @@ public class PlayerScript : MonoBehaviour
 
             mat.SetFloat("_Surface", 1f);
 
-            // Enable alpha blending
             mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
             mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
             mat.SetFloat("_ZWrite", 0f);
 
-            // Make sure Unity renders it in the transparent queue
             mat.renderQueue = (int)RenderQueue.Transparent;
 
-            // Base color alpha
             Color color = mat.GetColor("_BaseColor");
             color.a = 0.8f;
             mat.SetColor("_BaseColor", color);
 
-            // Metallic
             mat.SetFloat("_Metallic", 0.15f);
 
             Debug.Log("Transform ON!");

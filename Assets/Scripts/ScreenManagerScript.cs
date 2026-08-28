@@ -76,7 +76,7 @@ public class ScreenManagerScript : MonoBehaviour
 
     public void ShowScreen(GameObject screen)
     {
-        Debug.Log("Open " + screen);
+        //Debug.Log("Open " + screen);
 
         HideCanvasChildren();
 
