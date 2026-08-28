@@ -11,7 +11,6 @@ public class StageManagerScript : MonoBehaviour
     public Stage CurrentStage;
     public Vector2 InitialPlayerPosition = new Vector2(0, 0);
 
-    public float gravity = -25f;
 
     private PlayerScript playerScript;
 
@@ -20,7 +19,6 @@ public class StageManagerScript : MonoBehaviour
 
     private void Awake()
     {
-        Physics.gravity = new Vector3(0, gravity, 0);
     }
     void Start()
     {
@@ -32,10 +30,7 @@ public class StageManagerScript : MonoBehaviour
 
     public void LoadStage()
     {
-        foreach (Transform child in transform)
-        {
-            Destroy(child.gameObject);
-        }
+        ClearStage();
 
         GameObject stage = Instantiate(CurrentStage.StagePrefab);
         stage.transform.SetParent(transform);
@@ -68,7 +63,7 @@ public class StageManagerScript : MonoBehaviour
         SetStage(stageIndex);
         LoadStage();
     }
-    private void SetStage(int stageIndex)
+    public void SetStage(int stageIndex)
     {
         CurrentStageIndex = stageIndex;
 
@@ -91,6 +86,15 @@ public class StageManagerScript : MonoBehaviour
             LastStageCleared?.Invoke();
             return;
         }
+
         LoadNextStage();
+    }
+
+    private void ClearStage()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }
