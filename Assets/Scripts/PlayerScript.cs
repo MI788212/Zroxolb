@@ -16,6 +16,7 @@ public class PlayerScript : MonoBehaviour
     private bool IsRolling { get; set; }
     private bool voidRolling;
     private int voidRollsLeft;
+    private GameObject currentStar;
 
     private float FloorUnit = 1;
 
@@ -79,6 +80,7 @@ public class PlayerScript : MonoBehaviour
         rollingAllowed = false;
         voidRolling = false;
         voidRollsLeft = 0;
+        currentStar = null;
 
         StarTransform(false);
         starPower.gameObject.SetActive(false);
@@ -250,6 +252,8 @@ public class PlayerScript : MonoBehaviour
             {
                 voidRolling = false;
                 StarTransform(false);
+                currentStar.SetActive(true);
+                currentStar = null;
                 starPower.gameObject.SetActive(false);
             }
         }
@@ -263,7 +267,7 @@ public class PlayerScript : MonoBehaviour
             AcquireStar(tcr2.star);
         }
 
-        if(PlayerOrientation == Orientation.Y)
+        if(PlayerOrientation == Orientation.Y && !voidRolling)
         {
             if(tcr1.holeTile != null)
             {
@@ -271,7 +275,7 @@ public class PlayerScript : MonoBehaviour
                 return;
             }
 
-            if(tcr1.weakTile != null && !voidRolling)
+            if(tcr1.weakTile != null)
             {
                 WeakTileBreakAndFall(tcr1.weakTile);
                 return;
@@ -313,9 +317,14 @@ public class PlayerScript : MonoBehaviour
 
     private void AcquireStar(GameObject star)
     {
+        if (currentStar != null)
+        {
+            currentStar.SetActive(true);
+        }
+        currentStar = star;
         voidRolling = true;
         voidRollsLeft = star.GetComponent<Star>().voidRolls;
-        Destroy(star);
+        currentStar.SetActive(false);
         StarTransform(true);
         starPower.gameObject.SetActive(true);
         starPower.text = "Star Power: " + voidRollsLeft;
