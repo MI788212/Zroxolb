@@ -1,17 +1,22 @@
+using Assets.Scripts;
 using System;
 using System.Collections;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
-using Assets.Scripts;
 
 public class PlayerScript : MonoBehaviour
 {
     public float RollDuration = 0.5f;
     private bool rollingAllowed { get; set; }
     private bool IsRolling { get; set; }
+    private bool voidRolling;
+    private int voidRollsLeft;
+    private GameObject currentStar;
 
     private float FloorUnit = 1;
 
@@ -37,6 +42,10 @@ public class PlayerScript : MonoBehaviour
     private GameObject cube1;
     private GameObject cube2;
 
+    private Material playerMaterial;
+
+    public TMP_Text starPower;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -48,6 +57,7 @@ public class PlayerScript : MonoBehaviour
     {
         cube1 = transform.Find("Cube1").gameObject;
         cube2 = transform.Find("Cube2").gameObject;
+        playerMaterial = transform.Find("player").transform.GetComponent<Renderer>().material;
     }
 
     public void StartPlayer(Vector2 initialPlayerPosition)
@@ -68,6 +78,12 @@ public class PlayerScript : MonoBehaviour
 
         IsRolling = false;
         rollingAllowed = false;
+        voidRolling = false;
+        voidRollsLeft = 0;
+        currentStar = null;
+
+        StarTransform(false);
+        starPower.gameObject.SetActive(false);
     }
 
     private IEnumerator DelayRollingAllowed()
@@ -113,7 +129,7 @@ public class PlayerScript : MonoBehaviour
 
     public IEnumerator FallOffPlatform(bool cube1supported, bool cube2supported)
     {
-        Debug.Log("FallOffPlatform");
+        //Debug.Log("FallOffPlatform");
         rollingAllowed = false;
 
         if (cube1supported||cube2supported)
@@ -227,8 +243,31 @@ public class PlayerScript : MonoBehaviour
         TileCheckResult tcr1 = CheckTilesUnderCube(cube1.transform);
         TileCheckResult tcr2 = CheckTilesUnderCube(cube2.transform);
 
-        // events that can only be triggered if the player orientation is Y
-        if(PlayerOrientation == Orientation.Y)
+        if (voidRolling)
+        {
+            voidRollsLeft--;
+            starPower.text = "Star Power: " + voidRollsLeft;
+            Debug.Log(voidRollsLeft);
+            if (voidRollsLeft == 0)
+            {
+                voidRolling = false;
+                StarTransform(false);
+                currentStar.SetActive(true);
+                currentStar = null;
+                starPower.gameObject.SetActive(false);
+            }
+        }
+
+        if(tcr1.star != null)
+        {
+            AcquireStar(tcr1.star);
+        }
+        else if(tcr2.star != null)
+        {
+            AcquireStar(tcr2.star);
+        }
+
+        if(PlayerOrientation == Orientation.Y && !voidRolling)
         {
             if(tcr1.holeTile != null)
             {
@@ -244,6 +283,7 @@ public class PlayerScript : MonoBehaviour
 
             if(tcr1.switchX != null)
             {
+                //Debug.Log("Toggle x switch pls");
                 ToggleSwitchTile(tcr1.switchX);
                 return;
             }
@@ -263,8 +303,8 @@ public class PlayerScript : MonoBehaviour
                 ToggleSwitchTile(tcr2.switchO);
         }
 
-        Debug.Log(cube1supported +" "+ cube2supported);
-        if((!cube1supported) || (!cube2supported))
+        //Debug.Log(cube1supported +" "+ cube2supported);
+        if(!voidRolling && ((!cube1supported) || (!cube2supported)))
         {
             StartCoroutine(FallOffPlatform(cube1supported, cube2supported));
         }
@@ -273,6 +313,21 @@ public class PlayerScript : MonoBehaviour
     private bool TileSupportsCube(TileCheckResult tcr)
     {
         return tcr.normalTile != null || tcr.toggleTile != null || tcr.weakTile != null|| tcr.holeTile != null;
+    }
+
+    private void AcquireStar(GameObject star)
+    {
+        if (currentStar != null)
+        {
+            currentStar.SetActive(true);
+        }
+        currentStar = star;
+        voidRolling = true;
+        voidRollsLeft = star.GetComponent<Star>().voidRolls;
+        currentStar.SetActive(false);
+        StarTransform(true);
+        starPower.gameObject.SetActive(true);
+        starPower.text = "Star Power: " + voidRollsLeft;
     }
 
     private void ToggleSwitchTile(GameObject switchObject)
@@ -315,12 +370,57 @@ public class PlayerScript : MonoBehaviour
                 case "ToggleTile":
                     tileCheckResult.toggleTile = hit.transform.gameObject;
                     break;
+                case "Star":
+                    tileCheckResult.star = hit.transform.gameObject;
+                    break;
                 default:
                     //Debug.Log("Raycast hit smth else: " + hit.transform.name);
                     break;
             }
         }
         return tileCheckResult;
+    }
+
+    private void StarTransform(bool on)
+    {
+        if (on)
+        {
+            Material mat = playerMaterial;
+
+            mat.SetFloat("_Surface", 1f);
+
+            mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
+
+            mat.renderQueue = (int)RenderQueue.Transparent;
+
+            Color color = mat.GetColor("_BaseColor");
+            color.a = 0.8f;
+            mat.SetColor("_BaseColor", color);
+
+            mat.SetFloat("_Metallic", 0.15f);
+
+            Debug.Log("Transform ON!");
+        }
+        else {
+            Material mat = playerMaterial;
+            mat.SetFloat("_Surface", 0f);
+
+            mat.SetFloat("_SrcBlend", (float)BlendMode.One);
+            mat.SetFloat("_DstBlend", (float)BlendMode.Zero);
+            mat.SetFloat("_ZWrite", 1f);
+
+            mat.renderQueue = (int)RenderQueue.Geometry;
+
+            Color color = mat.GetColor("_BaseColor");
+            color.a = 1f;
+            mat.SetColor("_BaseColor", color);
+
+            mat.SetFloat("_Metallic", 0f);
+
+            Debug.Log("Transform OFF!");
+        }
     }
     private Vector3 GetAxisOfRotation(Vector3 rollDirection)
     {
