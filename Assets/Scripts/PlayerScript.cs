@@ -1,6 +1,7 @@
 using Assets.Scripts;
 using System;
 using System.Collections;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -42,6 +43,8 @@ public class PlayerScript : MonoBehaviour
 
     private Material playerMaterial;
 
+    public TMP_Text starPower;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -78,6 +81,7 @@ public class PlayerScript : MonoBehaviour
         voidRollsLeft = 0;
 
         StarTransform(false);
+        starPower.gameObject.SetActive(false);
     }
 
     private IEnumerator DelayRollingAllowed()
@@ -240,11 +244,13 @@ public class PlayerScript : MonoBehaviour
         if (voidRolling)
         {
             voidRollsLeft--;
+            starPower.text = "Star Power: " + voidRollsLeft;
             Debug.Log(voidRollsLeft);
             if (voidRollsLeft == 0)
             {
                 voidRolling = false;
                 StarTransform(false);
+                starPower.gameObject.SetActive(false);
             }
         }
 
@@ -310,6 +316,8 @@ public class PlayerScript : MonoBehaviour
         voidRollsLeft = star.GetComponent<Star>().voidRolls;
         Destroy(star);
         StarTransform(true);
+        starPower.gameObject.SetActive(true);
+        starPower.text = "Star Power: " + voidRollsLeft;
     }
 
     private void ToggleSwitchTile(GameObject switchObject)
