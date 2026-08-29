@@ -16,6 +16,8 @@ public class StageManagerScript : MonoBehaviour
 
     public event Action NextStageIntermission;
     public event Action LastStageCleared;
+    public event Action StageLoaded;
+    public event Action StageCleared;
 
     private void Awake()
     {
@@ -25,7 +27,7 @@ public class StageManagerScript : MonoBehaviour
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
 
         playerScript.PlayerFellOffPlatform += GameOver;
-        playerScript.PlayerFellIntoHole += StageCleared;
+        playerScript.PlayerFellIntoHole += StageClear;
     }
 
     public void LoadStage()
@@ -36,6 +38,8 @@ public class StageManagerScript : MonoBehaviour
         stage.transform.SetParent(transform);
 
         playerScript.StartPlayer(InitialPlayerPosition);
+
+        StageLoaded?.Invoke();
     }
 
     private void LoadNextStage()
@@ -73,16 +77,17 @@ public class StageManagerScript : MonoBehaviour
 
     private void GameOver()
     {
-        Debug.Log("Game over.");
+        //Debug.Log("Game over.");
         LoadStage();
     }
 
-    private void StageCleared()
+    private void StageClear()
     {
-        Debug.Log("Stage cleared.");
-        if(CurrentStageIndex== Stages.Count - 1)
+        StageCleared?.Invoke();
+        //Debug.Log("Stage cleared.");
+        if (CurrentStageIndex== Stages.Count - 1)
         {
-            Debug.Log("last stage cleared");
+            //Debug.Log("last stage cleared");
             LastStageCleared?.Invoke();
             return;
         }

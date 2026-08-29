@@ -38,6 +38,7 @@ public class PlayerScript : MonoBehaviour
 
     public event Action PlayerFellOffPlatform;
     public event Action PlayerFellIntoHole;
+    public event Action Rolled;
 
     private GameObject cube1;
     private GameObject cube2;
@@ -208,6 +209,7 @@ public class PlayerScript : MonoBehaviour
         if (!IsRolling)
         {
             //Debug.Log("Rolling starts!");
+            Rolled?.Invoke();
             IsRolling = true;
 
             float angle = 90f;
@@ -364,7 +366,7 @@ public class PlayerScript : MonoBehaviour
                     tileCheckResult.switchO = hit.transform.gameObject;
                     break;
                 case "HoleTile":
-                    Debug.Log("HoleTile detected");
+                    //Debug.Log("HoleTile detected");
                     tileCheckResult.holeTile = hit.transform.gameObject;
                     break;
                 case "ToggleTile":
@@ -401,7 +403,7 @@ public class PlayerScript : MonoBehaviour
 
             mat.SetFloat("_Metallic", 0.15f);
 
-            Debug.Log("Transform ON!");
+            //Debug.Log("Transform ON!");
         }
         else {
             Material mat = playerMaterial;
@@ -419,7 +421,7 @@ public class PlayerScript : MonoBehaviour
 
             mat.SetFloat("_Metallic", 0f);
 
-            Debug.Log("Transform OFF!");
+            //Debug.Log("Transform OFF!");
         }
     }
     private Vector3 GetAxisOfRotation(Vector3 rollDirection)

@@ -13,6 +13,7 @@ TagManager:
   - SwitchO
   - Button
   - Star
+  - GameStatsManager
   layers:
   - Default
   - TransparentFX
