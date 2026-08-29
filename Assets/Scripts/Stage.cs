@@ -11,6 +11,7 @@ namespace Assets.Scripts
     public class Stage
     {
         public GameObject StagePrefab;
+        private int bestMoves;
 
         public Vector2 GetInitialPlayerPosition()
         {

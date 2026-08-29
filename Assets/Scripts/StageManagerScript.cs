@@ -16,16 +16,26 @@ public class StageManagerScript : MonoBehaviour
 
     public event Action NextStageIntermission;
     public event Action LastStageCleared;
+    public event Action StageLoaded;
+    public event Action StageCleared;
+    public event Action UnlockedStage;
+
+    internal string unlockedStagesKey;
 
     private void Awake()
     {
+        unlockedStagesKey = "UnlockedStages";
+        if (!PlayerPrefs.HasKey(unlockedStagesKey))
+        {
+            PlayerPrefs.SetInt(unlockedStagesKey, 1);
+        }
     }
     void Start()
     {
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
 
         playerScript.PlayerFellOffPlatform += GameOver;
-        playerScript.PlayerFellIntoHole += StageCleared;
+        playerScript.PlayerFellIntoHole += StageClear;
     }
 
     public void LoadStage()
@@ -36,6 +46,8 @@ public class StageManagerScript : MonoBehaviour
         stage.transform.SetParent(transform);
 
         playerScript.StartPlayer(InitialPlayerPosition);
+
+        StageLoaded?.Invoke();
     }
 
     private void LoadNextStage()
@@ -73,16 +85,24 @@ public class StageManagerScript : MonoBehaviour
 
     private void GameOver()
     {
-        Debug.Log("Game over.");
+        //Debug.Log("Game over.");
         LoadStage();
     }
 
-    private void StageCleared()
+    private void StageClear()
     {
-        Debug.Log("Stage cleared.");
-        if(CurrentStageIndex== Stages.Count - 1)
+        StageCleared?.Invoke();
+
+        if (CurrentStageIndex + 1 >= PlayerPrefs.GetInt(unlockedStagesKey))
         {
-            Debug.Log("last stage cleared");
+            PlayerPrefs.SetInt(unlockedStagesKey, CurrentStageIndex + 2);
+            UnlockedStage?.Invoke();
+        }
+
+        //Debug.Log("Stage cleared.");
+        if (CurrentStageIndex== Stages.Count - 1)
+        {
+            //Debug.Log("last stage cleared");
             LastStageCleared?.Invoke();
             return;
         }

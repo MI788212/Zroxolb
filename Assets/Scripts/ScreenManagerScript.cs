@@ -1,3 +1,5 @@
+using Assets.Scripts;
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -15,20 +17,21 @@ public class ScreenManagerScript : MonoBehaviour
 
     public float interStageDuration = 2f;
     public TMP_Text interStageText;
-    public TMP_Text menuStageText;
 
     private StageManagerScript stageManagerScript;
+    private GameStatsManager gameStatsManager;
 
     void Start()
     {
         stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
 
         HideCanvasChildren();
 
         ShowScreen(titleScreen);
 
         stageManagerScript.NextStageIntermission += StageIntermission;
-        stageManagerScript.LastStageCleared += Congratulations;
+        stageManagerScript.LastStageCleared += OnLastStageCleared;
     }
 
     public void StartNewGame()
@@ -66,11 +69,14 @@ public class ScreenManagerScript : MonoBehaviour
     private void updateScreenInfo()
     {
         interStageText.text = "Stage " + stageManagerScript.CurrentStageIndex;
-        menuStageText.text = "Stage " + stageManagerScript.CurrentStageIndex;
     }
 
-    private void Congratulations()
+    private void OnLastStageCleared()
     {
+        GameStats totalGameStats = gameStatsManager.CalculateTotalStats();
+        string totalStats = "Total Time:\t" + TimeSpan.FromSeconds(totalGameStats.time).ToString(@"%h\:mm\:ss") + "\nTotal Moves:\t" + totalGameStats.moves;
+        TMP_Text totalStatsTMP = congratulationsScreen.transform.Find("group/TotalStats").GetComponent<TMP_Text>();
+        totalStatsTMP.text = totalStats;
         ShowScreen(congratulationsScreen);
     }
 
