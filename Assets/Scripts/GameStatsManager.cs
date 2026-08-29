@@ -73,7 +73,7 @@ public class GameStatsManager : MonoBehaviour
     {
         UpdateStats();
         string formattedTime = TimeSpan.FromSeconds(time).ToString(@"%h\:mm\:ss"); ;
-        Debug.Log("Stage cleared in " + moves + " moves and time: "+formattedTime);
+        //Debug.Log("Stage cleared in " + moves + " moves and time: "+formattedTime);
 
     }
 
@@ -91,8 +91,8 @@ public class GameStatsManager : MonoBehaviour
             PlayerPrefs.SetFloat(bestTimeKey, time);
         }
 
-        string formattedTime = TimeSpan.FromSeconds(PlayerPrefs.GetFloat(bestTimeKey)).ToString(@"%h\:mm\:ss");
-        Debug.Log("Best moves: " + PlayerPrefs.GetInt(bestMovesKey) + " Best time: " + formattedTime);
+        //string formattedTime = TimeSpan.FromSeconds(PlayerPrefs.GetFloat(bestTimeKey)).ToString(@"%h\:mm\:ss");
+        //Debug.Log("Best moves: " + PlayerPrefs.GetInt(bestMovesKey) + " Best time: " + formattedTime);
     }
 
     public GameStats CalculateTotalStats()

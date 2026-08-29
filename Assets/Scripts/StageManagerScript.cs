@@ -18,9 +18,17 @@ public class StageManagerScript : MonoBehaviour
     public event Action LastStageCleared;
     public event Action StageLoaded;
     public event Action StageCleared;
+    public event Action UnlockedStage;
+
+    internal string unlockedStagesKey;
 
     private void Awake()
     {
+        unlockedStagesKey = "UnlockedStages";
+        if (!PlayerPrefs.HasKey(unlockedStagesKey))
+        {
+            PlayerPrefs.SetInt(unlockedStagesKey, 1);
+        }
     }
     void Start()
     {
@@ -84,6 +92,13 @@ public class StageManagerScript : MonoBehaviour
     private void StageClear()
     {
         StageCleared?.Invoke();
+
+        if (CurrentStageIndex + 1 >= PlayerPrefs.GetInt(unlockedStagesKey))
+        {
+            PlayerPrefs.SetInt(unlockedStagesKey, CurrentStageIndex + 2);
+            UnlockedStage?.Invoke();
+        }
+
         //Debug.Log("Stage cleared.");
         if (CurrentStageIndex== Stages.Count - 1)
         {
