@@ -13,12 +13,12 @@ public class GameStatsManager : MonoBehaviour
     public event Action<int> MovesUpdated;
     public event Action<float> TimeUpdated;
 
-    private PlayerScript playerScript;
+    private Player playerScript;
     private StageManager stageManager;
     void Awake()
     {
         //Debug.Log("Game stats on!");
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
+        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
     }
 

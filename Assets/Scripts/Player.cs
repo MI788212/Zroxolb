@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
-public class PlayerScript : MonoBehaviour
+public class Player : MonoBehaviour
 {
     public float RollDuration = 0.1f;
     public float Gravity = -40f;
@@ -215,19 +215,19 @@ public class PlayerScript : MonoBehaviour
 
             if(sus1.switchX != null)
             {
-                sus1.switchX.GetComponent<SwitchScript>().Toggle();
+                sus1.switchX.GetComponent<Switch>().Toggle();
             }
         }
         
         if (sus1.switchO != null)
         {
-            sus1.switchO.GetComponent<SwitchScript>().Toggle();
+            sus1.switchO.GetComponent<Switch>().Toggle();
         }
 
         if (sus2.switchO != null)
         {
             if(playerOrientation != Orientation.Y)
-                sus2.switchO.GetComponent<SwitchScript>().Toggle();
+                sus2.switchO.GetComponent<Switch>().Toggle();
         }
 
         bool cube1supported = TileSupportsCube(sus1);

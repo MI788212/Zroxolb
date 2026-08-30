@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class SwitchScript : MonoBehaviour
+public class Switch : MonoBehaviour
 {
     public bool startOn = false;
     private bool IsOn = false;

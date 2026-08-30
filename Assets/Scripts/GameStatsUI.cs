@@ -10,12 +10,12 @@ public class GameStatsUI : MonoBehaviour
 
     private GameStatsManager gameStatsManager;
     private StageManager stageManager;
-    private PlayerScript playerScript;
+    private Player playerScript;
     private void Awake()
     {
         gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
         stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
+        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         text = GetComponent<TMP_Text>();
     }
 

@@ -92,10 +92,10 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         int stageIndexInt = int.Parse(stageIndex);
         bool interactable = stageIndexInt < PlayerPrefs.GetInt(stageManager.unlockedStagesKey);
-        transform.GetComponent<Button>().interactable = interactable;
+        transform.GetComponent<UnityEngine.UI.Button>().interactable = interactable;
         if (!interactable)
         {
-            transform.GetComponent<ButtonScript>().enabled = false;
+            transform.GetComponent<Button>().enabled = false;
             Color btnColor = buttonText.color;
             btnColor.a = lowererA;
             buttonText.color = btnColor;
@@ -106,7 +106,7 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
             Color btnColor = buttonText.color;
             btnColor.a = 0.5f;
             buttonText.color = btnColor;
-            transform.GetComponent<ButtonScript>().enabled = true;
+            transform.GetComponent<Button>().enabled = true;
             //Debug.Log("Button " + stageIndex + " set interactible");
         }
     }

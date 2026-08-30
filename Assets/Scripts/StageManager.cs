@@ -12,7 +12,7 @@ public class StageManager : MonoBehaviour
     private Vector2 initialPlayerPosition = new Vector2(0, 0);
 
 
-    private PlayerScript playerScript;
+    private Player playerScript;
 
     public event Action NextStageIntermission;
     public event Action LastStageCleared;
@@ -29,7 +29,7 @@ public class StageManager : MonoBehaviour
         {
             PlayerPrefs.SetInt(unlockedStagesKey, 1);
         }
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
+        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
     }
 
     private void OnEnable()
