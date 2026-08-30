@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class StageManagerScript : MonoBehaviour
+public class StageManager : MonoBehaviour
 {
     public List<Stage> Stages;
     internal int currentStageIndex;

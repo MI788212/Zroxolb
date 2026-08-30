@@ -9,12 +9,12 @@ public class GameStatsUI : MonoBehaviour
     private TMP_Text text;
 
     private GameStatsManager gameStatsManager;
-    private StageManagerScript stageManagerScript;
+    private StageManager stageManager;
     private PlayerScript playerScript;
     private void Awake()
     {
         gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
         text = GetComponent<TMP_Text>();
     }
@@ -34,8 +34,8 @@ public class GameStatsUI : MonoBehaviour
             case StatsType.StageIndex:
             case StatsType.BestMoves:
             case StatsType.BestTime:
-                stageManagerScript.StageLoaded += OnStageLoaded;
-                OnStageLoaded(stageManagerScript.currentStageIndex);
+                stageManager.StageLoaded += OnStageLoaded;
+                OnStageLoaded(stageManager.currentStageIndex);
                 break;
             case StatsType.StarPower:
                 playerScript.UpdatedStarPower += OnUpdatedStarPower;
@@ -58,8 +58,8 @@ public class GameStatsUI : MonoBehaviour
             case StatsType.StageIndex:
             case StatsType.BestMoves:
             case StatsType.BestTime:
-                stageManagerScript.StageLoaded -= OnStageLoaded;
-                OnStageLoaded(stageManagerScript.currentStageIndex);
+                stageManager.StageLoaded -= OnStageLoaded;
+                OnStageLoaded(stageManager.currentStageIndex);
                 break;
             case StatsType.StarPower:
                 playerScript.UpdatedStarPower -= OnUpdatedStarPower;
@@ -95,7 +95,7 @@ public class GameStatsUI : MonoBehaviour
         }
         else if (statsType == StatsType.BestTime)
         {
-            string key = "BestTime" + stageManagerScript.currentStageIndex;
+            string key = "BestTime" + stageManager.currentStageIndex;
             if (PlayerPrefs.HasKey(key))
             {
                 text.text = GameStats.ToTimeFormat(PlayerPrefs.GetFloat(key));

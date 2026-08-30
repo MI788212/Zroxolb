@@ -14,12 +14,12 @@ public class GameStatsManager : MonoBehaviour
     public event Action<float> TimeUpdated;
 
     private PlayerScript playerScript;
-    private StageManagerScript stageManagerScript;
+    private StageManager stageManager;
     void Awake()
     {
         //Debug.Log("Game stats on!");
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
     }
 
     private void Initialize()
@@ -50,16 +50,16 @@ public class GameStatsManager : MonoBehaviour
     private void SubscribeToEvents()
     {
         playerScript.Rolled += OnRolled;
-        stageManagerScript.StageLoaded += OnStageLoaded;
-        stageManagerScript.StageCleared += OnStageCleared;
+        stageManager.StageLoaded += OnStageLoaded;
+        stageManager.StageCleared += OnStageCleared;
         //Debug.Log("Subscribed to events");
     }
 
     private void UnsubscribeFromEvents()
     {
         playerScript.Rolled -= OnRolled;
-        stageManagerScript.StageLoaded -= OnStageLoaded;
-        stageManagerScript.StageCleared -= OnStageCleared;
+        stageManager.StageLoaded -= OnStageLoaded;
+        stageManager.StageCleared -= OnStageCleared;
     }
 
     private void OnRolled()
@@ -106,7 +106,7 @@ public class GameStatsManager : MonoBehaviour
         totalGameStats.moves = 0;
         totalGameStats.time = 0;
 
-        for(int i=0; i<stageManagerScript.Stages.Count; i++)
+        for(int i=0; i<stageManager.Stages.Count; i++)
         {
             string bestMovesKey = "BestMoves" + i;
             string bestTimeKey = "BestTime" + i;

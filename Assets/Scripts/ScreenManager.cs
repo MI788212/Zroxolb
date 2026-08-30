@@ -4,7 +4,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class ScreenManagerScript : MonoBehaviour
+public class ScreenManager : MonoBehaviour
 {
     public Canvas canvas;
     public GameObject titleScreen;
@@ -18,12 +18,12 @@ public class ScreenManagerScript : MonoBehaviour
     public float interStageDuration = 2f;
     public TMP_Text interStageText;
 
-    private StageManagerScript stageManagerScript;
+    private StageManager stageManagerScript;
     private GameStatsManager gameStatsManager;
 
     void Start()
     {
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
         gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
 
         HideCanvasChildren();

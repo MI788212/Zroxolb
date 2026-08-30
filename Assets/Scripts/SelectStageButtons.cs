@@ -19,11 +19,11 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
     private bool hasGameStats;
     private string noGameStats;
 
-    private StageManagerScript stageManagerScript;
+    private StageManager stageManager;
 
     private void Awake()
     {
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
 
         buttonText = transform.GetChild(0).transform.GetComponent<TMP_Text>();
 
@@ -91,7 +91,7 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
     private void UpdateInteractable()
     {
         int stageIndexInt = int.Parse(stageIndex);
-        bool interactable = stageIndexInt < PlayerPrefs.GetInt(stageManagerScript.unlockedStagesKey);
+        bool interactable = stageIndexInt < PlayerPrefs.GetInt(stageManager.unlockedStagesKey);
         transform.GetComponent<Button>().interactable = interactable;
         if (!interactable)
         {
