@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 
-public class ButtonScript : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class Button : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public TMP_Text text;
     Color color;

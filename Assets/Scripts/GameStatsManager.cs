@@ -10,27 +10,31 @@ public class GameStatsManager : MonoBehaviour
     internal float time;
     internal int stageIndex;
 
-    public event Action CurrentStatsUpdated;
+    public event Action<int> MovesUpdated;
+    public event Action<float> TimeUpdated;
 
-    private PlayerScript playerScript;
-    private StageManagerScript stageManagerScript;
+    private Player playerScript;
+    private StageManager stageManager;
     void Awake()
     {
         //Debug.Log("Game stats on!");
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
     }
 
     private void Initialize()
     {
         moves = 0;
         time = 0;
+
+        MovesUpdated?.Invoke(moves);
+        TimeUpdated?.Invoke(time);
     }
 
     private void Update()
     {
         time += Time.deltaTime;
-        CurrentStatsUpdated?.Invoke();
+        TimeUpdated?.Invoke(time);
     }
 
     private void OnEnable()
@@ -46,33 +50,34 @@ public class GameStatsManager : MonoBehaviour
     private void SubscribeToEvents()
     {
         playerScript.Rolled += OnRolled;
-        stageManagerScript.StageLoaded += OnStageLoaded;
-        stageManagerScript.StageCleared += OnStageCleared;
+        stageManager.StageLoaded += OnStageLoaded;
+        stageManager.StageCleared += OnStageCleared;
         //Debug.Log("Subscribed to events");
     }
 
     private void UnsubscribeFromEvents()
     {
         playerScript.Rolled -= OnRolled;
-        stageManagerScript.StageLoaded -= OnStageLoaded;
-        stageManagerScript.StageCleared -= OnStageCleared;
+        stageManager.StageLoaded -= OnStageLoaded;
+        stageManager.StageCleared -= OnStageCleared;
     }
 
     private void OnRolled()
     {
         moves++;
+        MovesUpdated(moves);
     }
 
-    private void OnStageLoaded()
+    private void OnStageLoaded(int _stageIndex)
     {
-        stageIndex = stageManagerScript.CurrentStageIndex;
+        stageIndex = _stageIndex;
         Initialize();
     }
 
     private void OnStageCleared()
     {
         UpdateStats();
-        string formattedTime = TimeSpan.FromSeconds(time).ToString(@"%h\:mm\:ss"); ;
+        //string formattedTime = TimeSpan.FromSeconds(time).ToString(@"%h\:mm\:ss");
         //Debug.Log("Stage cleared in " + moves + " moves and time: "+formattedTime);
 
     }
@@ -101,7 +106,7 @@ public class GameStatsManager : MonoBehaviour
         totalGameStats.moves = 0;
         totalGameStats.time = 0;
 
-        for(int i=0; i<stageManagerScript.Stages.Count; i++)
+        for(int i=0; i<stageManager.Stages.Count; i++)
         {
             string bestMovesKey = "BestMoves" + i;
             string bestTimeKey = "BestTime" + i;

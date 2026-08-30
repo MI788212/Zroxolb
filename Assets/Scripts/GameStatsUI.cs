@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using System;
 using TMPro;
 using UnityEngine;
@@ -7,71 +8,119 @@ public class GameStatsUI : MonoBehaviour
     public StatsType statsType;
     private TMP_Text text;
 
-    private GameStatsManager gameStats;
-    private StageManagerScript stageManagerScript;
+    private GameStatsManager gameStatsManager;
+    private StageManager stageManager;
+    private Player playerScript;
     private void Awake()
     {
-        gameStats = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
+        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         text = GetComponent<TMP_Text>();
     }
 
     private void OnEnable()
     {
-        if(statsType == StatsType.Moves || statsType == StatsType.Time)
-            gameStats.CurrentStatsUpdated += OnCurrentStatsUpdated;
-        else
-            stageManagerScript.StageLoaded += OnStageLoaded;
+        switch (statsType)
+        {
+            case StatsType.Moves:
+                gameStatsManager.MovesUpdated += OnMovesUpdated;
+                OnMovesUpdated(gameStatsManager.moves);
+                break;
+            case StatsType.Time:
+                gameStatsManager.TimeUpdated += OnTimeUpdated;
+                OnTimeUpdated(gameStatsManager.time);
+                break;
+            case StatsType.StageIndex:
+            case StatsType.BestMoves:
+            case StatsType.BestTime:
+                stageManager.StageLoaded += OnStageLoaded;
+                OnStageLoaded(stageManager.currentStageIndex);
+                break;
+            case StatsType.StarPower:
+                playerScript.UpdatedStarPower += OnUpdatedStarPower;
+                break;
+            default:
+                break;
+        }
     }
 
     private void OnDisable()
     {
-        gameStats.CurrentStatsUpdated -= OnCurrentStatsUpdated;
+        switch (statsType)
+        {
+            case StatsType.Moves:
+                gameStatsManager.MovesUpdated -= OnMovesUpdated;
+                break;
+            case StatsType.Time:
+                gameStatsManager.TimeUpdated -= OnTimeUpdated;
+                break;
+            case StatsType.StageIndex:
+            case StatsType.BestMoves:
+            case StatsType.BestTime:
+                stageManager.StageLoaded -= OnStageLoaded;
+                OnStageLoaded(stageManager.currentStageIndex);
+                break;
+            case StatsType.StarPower:
+                playerScript.UpdatedStarPower -= OnUpdatedStarPower;
+                break;
+            default:
+                break;
+        }
     }
 
-    private void OnCurrentStatsUpdated()
+    private void OnMovesUpdated(int moves)
     {
-        if (statsType == StatsType.Moves)
-        {
-            text.text = gameStats.moves.ToString();
-        }
-        else if(statsType == StatsType.Time)
-        {
-            text.text = TimeSpan.FromSeconds(gameStats.time).ToString(@"%h\:mm\:ss");
-        }
+        text.text = moves.ToString();
     }
 
-    private void OnStageLoaded()
+    private void OnTimeUpdated(float time)
+    {
+        text.text = GameStats.ToTimeFormat(time);
+    }
+
+    private void OnStageLoaded(int stageIndex)
     {
         if (statsType == StatsType.BestMoves)
         {
-            string key = "BestMoves" + stageManagerScript.CurrentStageIndex;
+            string key = "BestMoves" + stageIndex;
             if (PlayerPrefs.HasKey(key)) 
             { 
                 text.text = PlayerPrefs.GetInt(key).ToString();
             }
             else
             {
-                text.text = "x";
+                text.text = GameStats.UNKNOWNMOVES;
             }
         }
         else if (statsType == StatsType.BestTime)
         {
-            string key = "BestTime" + stageManagerScript.CurrentStageIndex;
+            string key = "BestTime" + stageManager.currentStageIndex;
             if (PlayerPrefs.HasKey(key))
             {
-                text.text = TimeSpan.FromSeconds(PlayerPrefs.GetFloat(key)).ToString(@"%h\:mm\:ss");
+                text.text = GameStats.ToTimeFormat(PlayerPrefs.GetFloat(key));
             }
             else
             {
-                text.text = "xx:xx:xx";
+                text.text = GameStats.UNKNOWNTIME;
             }
         }
         else if (statsType == StatsType.StageIndex)
         {
-            text.text = stageManagerScript.CurrentStageIndex.ToString();
-            //Debug.Log(gameStats.stageIndex);
+            text.text = stageIndex.ToString();
         }
+    }
+
+    private void OnUpdatedStarPower(int starPower)
+    {
+        if (starPower == 0)
+        {
+            text.alpha = 0;
+            return;
+        }
+
+        text.alpha = 1;
+        text.text = "Star Power: " + starPower;
     }
 }
 public enum StatsType
@@ -80,5 +129,6 @@ public enum StatsType
     Time,
     StageIndex,
     BestMoves,
-    BestTime
+    BestTime,
+    StarPower
 }

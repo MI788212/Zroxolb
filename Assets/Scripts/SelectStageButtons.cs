@@ -19,11 +19,11 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
     private bool hasGameStats;
     private string noGameStats;
 
-    private StageManagerScript stageManagerScript;
+    private StageManager stageManager;
 
     private void Awake()
     {
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManagerScript>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
 
         buttonText = transform.GetChild(0).transform.GetComponent<TMP_Text>();
 
@@ -91,11 +91,11 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
     private void UpdateInteractable()
     {
         int stageIndexInt = int.Parse(stageIndex);
-        bool interactable = stageIndexInt < PlayerPrefs.GetInt(stageManagerScript.unlockedStagesKey);
-        transform.GetComponent<Button>().interactable = interactable;
+        bool interactable = stageIndexInt < PlayerPrefs.GetInt(stageManager.unlockedStagesKey);
+        transform.GetComponent<UnityEngine.UI.Button>().interactable = interactable;
         if (!interactable)
         {
-            transform.GetComponent<ButtonScript>().enabled = false;
+            transform.GetComponent<Button>().enabled = false;
             Color btnColor = buttonText.color;
             btnColor.a = lowererA;
             buttonText.color = btnColor;
@@ -106,7 +106,7 @@ public class SelectStageButtons : MonoBehaviour, IPointerEnterHandler, IPointerE
             Color btnColor = buttonText.color;
             btnColor.a = 0.5f;
             buttonText.color = btnColor;
-            transform.GetComponent<ButtonScript>().enabled = true;
+            transform.GetComponent<Button>().enabled = true;
             //Debug.Log("Button " + stageIndex + " set interactible");
         }
     }
