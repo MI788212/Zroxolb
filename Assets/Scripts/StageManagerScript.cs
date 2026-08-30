@@ -7,16 +7,16 @@ using UnityEngine;
 public class StageManagerScript : MonoBehaviour
 {
     public List<Stage> Stages;
-    public int CurrentStageIndex;
-    public Stage CurrentStage;
-    public Vector2 InitialPlayerPosition = new Vector2(0, 0);
+    internal int currentStageIndex;
+    private Stage currentStage;
+    private Vector2 initialPlayerPosition = new Vector2(0, 0);
 
 
     private PlayerScript playerScript;
 
     public event Action NextStageIntermission;
     public event Action LastStageCleared;
-    public event Action StageLoaded;
+    public event Action<int> StageLoaded;
     public event Action StageCleared;
     public event Action UnlockedStage;
 
@@ -29,25 +29,31 @@ public class StageManagerScript : MonoBehaviour
         {
             PlayerPrefs.SetInt(unlockedStagesKey, 1);
         }
-    }
-    void Start()
-    {
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
+    }
 
+    private void OnEnable()
+    {
         playerScript.PlayerFellOffPlatform += GameOver;
         playerScript.PlayerFellIntoHole += StageClear;
+    }
+
+    private void OnDisable()
+    {
+        playerScript.PlayerFellOffPlatform -= GameOver;
+        playerScript.PlayerFellIntoHole -= StageClear;
     }
 
     public void LoadStage()
     {
         ClearStage();
 
-        GameObject stage = Instantiate(CurrentStage.StagePrefab);
+        GameObject stage = Instantiate(currentStage.StagePrefab);
         stage.transform.SetParent(transform);
 
-        playerScript.StartPlayer(InitialPlayerPosition);
+        playerScript.StartPlayer(initialPlayerPosition);
 
-        StageLoaded?.Invoke();
+        StageLoaded?.Invoke(currentStageIndex);
     }
 
     private void LoadNextStage()
@@ -58,16 +64,16 @@ public class StageManagerScript : MonoBehaviour
 
     private void NextStage()
     {
-        CurrentStageIndex++;
+        currentStageIndex++;
 
-        if (CurrentStageIndex >= Stages.Count())
+        if (currentStageIndex >= Stages.Count())
         {
-            CurrentStageIndex--;
+            currentStageIndex--;
             Debug.Log("trying to move onto next stage, but this is the last.");
         }
 
-        CurrentStage = Stages.ElementAt(CurrentStageIndex);
-        InitialPlayerPosition = CurrentStage.GetInitialPlayerPosition();
+        currentStage = Stages.ElementAt(currentStageIndex);
+        initialPlayerPosition = currentStage.GetInitialPlayerPosition();
     }
 
     public void LoadStage(int stageIndex)
@@ -77,10 +83,10 @@ public class StageManagerScript : MonoBehaviour
     }
     public void SetStage(int stageIndex)
     {
-        CurrentStageIndex = stageIndex;
+        currentStageIndex = stageIndex;
 
-        CurrentStage = Stages.ElementAt(CurrentStageIndex);
-        InitialPlayerPosition = CurrentStage.GetInitialPlayerPosition();
+        currentStage = Stages.ElementAt(currentStageIndex);
+        initialPlayerPosition = currentStage.GetInitialPlayerPosition();
     }
 
     private void GameOver()
@@ -93,14 +99,14 @@ public class StageManagerScript : MonoBehaviour
     {
         StageCleared?.Invoke();
 
-        if (CurrentStageIndex + 1 >= PlayerPrefs.GetInt(unlockedStagesKey))
+        if (currentStageIndex + 1 >= PlayerPrefs.GetInt(unlockedStagesKey))
         {
-            PlayerPrefs.SetInt(unlockedStagesKey, CurrentStageIndex + 2);
+            PlayerPrefs.SetInt(unlockedStagesKey, currentStageIndex + 2);
             UnlockedStage?.Invoke();
         }
 
         //Debug.Log("Stage cleared.");
-        if (CurrentStageIndex== Stages.Count - 1)
+        if (currentStageIndex== Stages.Count - 1)
         {
             //Debug.Log("last stage cleared");
             LastStageCleared?.Invoke();
@@ -117,4 +123,5 @@ public class StageManagerScript : MonoBehaviour
             Destroy(child.gameObject);
         }
     }
+
 }

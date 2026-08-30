@@ -1,65 +1,55 @@
 using Assets.Scripts;
 using System;
 using System.Collections;
-using TMPro;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
 public class PlayerScript : MonoBehaviour
 {
-    public float RollDuration = 0.5f;
-    private bool rollingAllowed { get; set; }
-    private bool IsRolling { get; set; }
+    public float RollDuration = 0.1f;
+    public float Gravity = -40f;
+    public float StageUnit = 1;
+    public float StartFallHeight = 10;
+    private float initialLockDuration;
+    public float FallDuration = 1f;
+
+    private bool rollingAllowed;
     private bool voidRolling;
     private int voidRollsLeft;
     private GameObject currentStar;
 
-    private float FloorUnit = 1;
-
-    public float initialLockDuration = 0.5f;
-    public float fallDuration = 2f;
-    public float startFallHeight = 10;
-    public float gravity = -40f;
-
-    internal Orientation PlayerOrientation { get; set; }
-
-    private Rigidbody rb;
-
-    public InputActionReference rollForward;
-    public InputActionReference rollBack;
-    public InputActionReference rollLeft;
-    public InputActionReference rollRight;
-
-    public float force = 5f; // the amount of force with which you push the block when it falls off the platform
-
-    public event Action PlayerFellOffPlatform;
-    public event Action PlayerFellIntoHole;
-    public event Action Rolled;
+    internal Orientation playerOrientation;
 
     private GameObject cube1;
     private GameObject cube2;
 
+    private Rigidbody rb;
     private Material playerMaterial;
 
-    public TMP_Text starPower;
+    public InputActionReference RollForward;
+    public InputActionReference RollBack;
+    public InputActionReference RollLeft;
+    public InputActionReference RollRight;
+
+    public event Action PlayerFellOffPlatform;
+    public event Action PlayerFellIntoHole;
+    public event Action Rolled;
+    public event Action<int> UpdatedStarPower;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        Physics.gravity = new Vector3(0, gravity, 0);
-        initialLockDuration = Mathf.Sqrt(2f * startFallHeight / Mathf.Abs(gravity));
-    }
 
-    private void Start()
-    {
+        Physics.gravity = new Vector3(0, Gravity, 0);
+        initialLockDuration = Mathf.Sqrt(2f * StartFallHeight / Mathf.Abs(Gravity));
+
         cube1 = transform.Find("Cube1").gameObject;
         cube2 = transform.Find("Cube2").gameObject;
+
         playerMaterial = transform.Find("player").transform.GetComponent<Renderer>().material;
     }
+
 
     public void StartPlayer(Vector2 initialPlayerPosition)
     {
@@ -73,18 +63,16 @@ public class PlayerScript : MonoBehaviour
     {
         ConstrainRB();
 
-        transform.position = new Vector3(initialPlayerPosition.x, startFallHeight , initialPlayerPosition.y);
+        transform.position = new Vector3(initialPlayerPosition.x, StartFallHeight , initialPlayerPosition.y);
         transform.eulerAngles = new Vector3(0, 0, 0);
-        PlayerOrientation = Orientation.Y;
+        playerOrientation = Orientation.Y;
 
-        IsRolling = false;
         rollingAllowed = false;
         voidRolling = false;
         voidRollsLeft = 0;
         currentStar = null;
-
         StarTransform(false);
-        starPower.gameObject.SetActive(false);
+        UpdatedStarPower?.Invoke(0);
     }
 
     private IEnumerator DelayRollingAllowed()
@@ -114,85 +102,35 @@ public class PlayerScript : MonoBehaviour
 
     private void OnEnable()
     {
-        rollForward.action.started += RollForward;
-        rollBack.action.started += RollBack;
-        rollLeft.action.started += RollLeft;
-        rollRight.action.started += RollRight;
+        RollForward.action.started += OnRollForward;
+        RollBack.action.started += OnRollBack;
+        RollLeft.action.started += OnRollLeft;
+        RollRight.action.started += OnRollRight;
     }
 
     private void OnDisable()
     {
-        rollForward.action.started -= RollForward;
-        rollBack.action.started -= RollBack;
-        rollLeft.action.started -= RollLeft;
-        rollRight.action.started -= RollRight;
+        RollForward.action.started -= OnRollForward;
+        RollBack.action.started -= OnRollBack;
+        RollLeft.action.started -= OnRollLeft;
+        RollRight.action.started -= OnRollRight;
     }
 
-    public IEnumerator FallOffPlatform(bool cube1supported, bool cube2supported)
-    {
-        //Debug.Log("FallOffPlatform");
-        rollingAllowed = false;
-
-        if (cube1supported||cube2supported)
-        {
-            if (cube2supported)
-            {
-                GameObject tmp = cube2;
-                cube2 = cube1;
-                cube1 = tmp;
-            }
-            float angle = 90;
-            float elapsedTime = 0f;
-            Vector3 pivotOfRotation = (cube1.transform.position + cube2.transform.position) / 2 + Vector3.down * FloorUnit / 2;
-            Vector3 axisOfRotation = Quaternion.Euler(0, 90, 0)*(cube2.transform.position - cube1.transform.position);
-
-            while (elapsedTime < RollDuration)
-            {
-                float previousElapsedTime = elapsedTime;
-                elapsedTime = Mathf.Min(elapsedTime + Time.deltaTime, RollDuration);
-
-                float deltaAngle = angle *
-                    ((elapsedTime - previousElapsedTime) / RollDuration);
-
-                transform.RotateAround(pivotOfRotation, axisOfRotation, deltaAngle);
-
-                yield return null;
-            }
-        }
-
-        UnconstrainRB();
-
-        rb.AddForce(Vector3.down * force, ForceMode.Impulse);
-
-        yield return new WaitForSeconds(fallDuration);
-
-        PlayerFellOffPlatform?.Invoke();
-    }
-    private IEnumerator FallIntoHole()
-    {
-        rollingAllowed = false;
-        UnconstrainRB();
-        rb.AddForce(Vector3.down * force, ForceMode.Impulse);
-        yield return new WaitForSeconds(fallDuration);
-
-        PlayerFellIntoHole?.Invoke();
-    }
-
-    private void RollForward(InputAction.CallbackContext context)
+    private void OnRollForward(InputAction.CallbackContext context)
     {
         Roll(Vector3.forward);
     }
 
-    private void RollBack(InputAction.CallbackContext context)
+    private void OnRollBack(InputAction.CallbackContext context)
     {
         Roll(Vector3.back);
     }
-    private void RollLeft(InputAction.CallbackContext context)
+    private void OnRollLeft(InputAction.CallbackContext context)
     {
         Roll(Vector3.left);
     }
 
-    private void RollRight(InputAction.CallbackContext context)
+    private void OnRollRight(InputAction.CallbackContext context)
     {
         Roll(Vector3.right);
     }
@@ -206,113 +144,105 @@ public class PlayerScript : MonoBehaviour
 
     private IEnumerator RollToDirection(Vector3 rollDirection)
     {
-        if (!IsRolling)
+        //Debug.Log("Rolling starts!");
+        rollingAllowed = false;
+
+        float angle = 90f;
+        Vector3 axisOfRotation = GetAxisOfRotation(rollDirection);
+        Vector3 pivotOfRotation = GetPivotOfRotation(rollDirection);
+        playerOrientation = NextOrientation(rollDirection);
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < RollDuration)
         {
-            //Debug.Log("Rolling starts!");
-            Rolled?.Invoke();
-            IsRolling = true;
+            float previousElapsedTime = elapsedTime;
+            elapsedTime = Mathf.Min(elapsedTime + Time.deltaTime, RollDuration);
 
-            float angle = 90f;
-            Vector3 axisOfRotation = GetAxisOfRotation(rollDirection);
-            Vector3 pivotOfRotation = GetPivotOfRotation(rollDirection);
-            PlayerOrientation = NextOrientation(rollDirection);
+            float deltaAngle = angle *
+                ((elapsedTime - previousElapsedTime) / RollDuration);
 
-            float elapsedTime = 0f;
+            transform.RotateAround(pivotOfRotation, axisOfRotation, deltaAngle);
 
-            while (elapsedTime < RollDuration)
-            {
-                float previousElapsedTime = elapsedTime;
-                elapsedTime = Mathf.Min(elapsedTime + Time.deltaTime, RollDuration);
-
-                float deltaAngle = angle *
-                    ((elapsedTime - previousElapsedTime) / RollDuration);
-
-                transform.RotateAround(pivotOfRotation, axisOfRotation, deltaAngle);
-
-                yield return null;
-            }
-
-            Correction();
-
-            CheckTiles();
-            
-            IsRolling = false;
+            yield return null;
         }
+
+        Correction();
+
+        Rolled?.Invoke();
+
+        rollingAllowed = CheckState();
     }
 
-    private void CheckTiles()
+    private bool CheckState()
     {
-        TileCheckResult tcr1 = CheckTilesUnderCube(cube1.transform);
-        TileCheckResult tcr2 = CheckTilesUnderCube(cube2.transform);
+        StageUnitState sus1 = new StageUnitState(cube1.transform);
+        StageUnitState sus2 = new StageUnitState(cube2.transform);
 
         if (voidRolling)
         {
             voidRollsLeft--;
-            starPower.text = "Star Power: " + voidRollsLeft;
-            Debug.Log(voidRollsLeft);
+            UpdatedStarPower?.Invoke(voidRollsLeft);
             if (voidRollsLeft == 0)
             {
-                voidRolling = false;
-                StarTransform(false);
-                currentStar.SetActive(true);
-                currentStar = null;
-                starPower.gameObject.SetActive(false);
+                ReleaseStar();
             }
         }
 
-        if(tcr1.star != null)
+        if(sus1.star != null)
         {
-            AcquireStar(tcr1.star);
+            AcquireStar(sus1.star);
         }
-        else if(tcr2.star != null)
+        else if(sus2.star != null)
         {
-            AcquireStar(tcr2.star);
+            AcquireStar(sus2.star);
         }
 
-        if(PlayerOrientation == Orientation.Y && !voidRolling)
+        if(playerOrientation == Orientation.Y && !voidRolling)
         {
-            if(tcr1.holeTile != null)
+            if(sus1.holeTile != null)
             {
                 StartCoroutine(FallIntoHole());
-                return;
+                return false;
             }
 
-            if(tcr1.weakTile != null)
+            if(sus1.weakTile != null)
             {
-                WeakTileBreakAndFall(tcr1.weakTile);
-                return;
+                sus1.weakTile.GetComponent<WeakTile>().TileBreak();
+                StartCoroutine(FallOffPlatform(false, false));
+                return false;
             }
 
-            if(tcr1.switchX != null)
+            if(sus1.switchX != null)
             {
-                //Debug.Log("Toggle x switch pls");
-                ToggleSwitchTile(tcr1.switchX);
-                return;
+                sus1.switchX.GetComponent<SwitchScript>().Toggle();
             }
         }
         
-        bool cube1supported = TileSupportsCube(tcr1);
-        bool cube2supported = TileSupportsCube(tcr2);
-
-        if(tcr1.switchO != null)
+        if (sus1.switchO != null)
         {
-            ToggleSwitchTile(tcr1.switchO);
+            sus1.switchO.GetComponent<SwitchScript>().Toggle();
         }
 
-        if (tcr2.switchO != null)
+        if (sus2.switchO != null)
         {
-            if(PlayerOrientation != Orientation.Y)
-                ToggleSwitchTile(tcr2.switchO);
+            if(playerOrientation != Orientation.Y)
+                sus2.switchO.GetComponent<SwitchScript>().Toggle();
         }
 
-        //Debug.Log(cube1supported +" "+ cube2supported);
-        if(!voidRolling && ((!cube1supported) || (!cube2supported)))
+        bool cube1supported = TileSupportsCube(sus1);
+        bool cube2supported = TileSupportsCube(sus2);
+
+        if (!voidRolling && ((!cube1supported) || (!cube2supported)))
         {
             StartCoroutine(FallOffPlatform(cube1supported, cube2supported));
+            return false;
         }
+
+        return true;
     }
 
-    private bool TileSupportsCube(TileCheckResult tcr)
+    private bool TileSupportsCube(StageUnitState tcr)
     {
         return tcr.normalTile != null || tcr.toggleTile != null || tcr.weakTile != null|| tcr.holeTile != null;
     }
@@ -321,66 +251,23 @@ public class PlayerScript : MonoBehaviour
     {
         if (currentStar != null)
         {
-            currentStar.SetActive(true);
+            ReleaseStar();
         }
         currentStar = star;
         voidRolling = true;
         voidRollsLeft = star.GetComponent<Star>().voidRolls;
         currentStar.SetActive(false);
         StarTransform(true);
-        starPower.gameObject.SetActive(true);
-        starPower.text = "Star Power: " + voidRollsLeft;
+        UpdatedStarPower?.Invoke(voidRollsLeft);
     }
 
-    private void ToggleSwitchTile(GameObject switchObject)
+    private void ReleaseStar()
     {
-        switchObject.GetComponent<SwitchScript>().Toggle();
-    }
-
-    private void WeakTileBreakAndFall(GameObject weakTile)
-    {
-        weakTile.AddComponent<Rigidbody>();
-        StartCoroutine(FallOffPlatform(false, false));
-    }
-
-    private TileCheckResult CheckTilesUnderCube(Transform cube)
-    {
-        TileCheckResult tileCheckResult = new TileCheckResult();
-
-        RaycastHit[] hits = Physics.RaycastAll(cube.position, Vector3.down, 5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
-        foreach (RaycastHit hit in hits)
-        {
-            string hitTag = hit.transform.tag;
-            switch (hitTag)
-            {
-                case "NormalTile":
-                    tileCheckResult.normalTile = hit.transform.gameObject;
-                    break;
-                case "WeakTile":
-                    tileCheckResult.weakTile = hit.transform.gameObject;
-                    break;
-                case "SwitchX":
-                    tileCheckResult.switchX = hit.transform.gameObject;
-                    break;
-                case "SwitchO":
-                    tileCheckResult.switchO = hit.transform.gameObject;
-                    break;
-                case "HoleTile":
-                    //Debug.Log("HoleTile detected");
-                    tileCheckResult.holeTile = hit.transform.gameObject;
-                    break;
-                case "ToggleTile":
-                    tileCheckResult.toggleTile = hit.transform.gameObject;
-                    break;
-                case "Star":
-                    tileCheckResult.star = hit.transform.gameObject;
-                    break;
-                default:
-                    //Debug.Log("Raycast hit smth else: " + hit.transform.name);
-                    break;
-            }
-        }
-        return tileCheckResult;
+        currentStar.SetActive(true);
+        currentStar = null;
+        voidRolling = false;
+        StarTransform(false);
+        UpdatedStarPower?.Invoke(voidRollsLeft);
     }
 
     private void StarTransform(bool on)
@@ -402,8 +289,6 @@ public class PlayerScript : MonoBehaviour
             mat.SetColor("_BaseColor", color);
 
             mat.SetFloat("_Metallic", 0.15f);
-
-            //Debug.Log("Transform ON!");
         }
         else {
             Material mat = playerMaterial;
@@ -420,9 +305,55 @@ public class PlayerScript : MonoBehaviour
             mat.SetColor("_BaseColor", color);
 
             mat.SetFloat("_Metallic", 0f);
-
-            //Debug.Log("Transform OFF!");
         }
+    }
+    public IEnumerator FallOffPlatform(bool cube1supported, bool cube2supported)
+    {
+        if (cube1supported || cube2supported)
+        {
+            yield return AdjustPlayerBeforeFall(cube2supported);
+        }
+
+        UnconstrainRB();
+
+        yield return new WaitForSeconds(FallDuration);
+
+        PlayerFellOffPlatform?.Invoke();
+    }
+
+    private IEnumerator AdjustPlayerBeforeFall(bool cube2supported)
+    {
+        if (cube2supported)
+        {
+            GameObject tmp = cube2;
+            cube2 = cube1;
+            cube1 = tmp;
+        }
+        float angle = 90;
+        float elapsedTime = 0f;
+        Vector3 pivotOfRotation = (cube1.transform.position + cube2.transform.position) / 2 + Vector3.down * StageUnit / 2;
+        Vector3 axisOfRotation = Quaternion.Euler(0, 90, 0) * (cube2.transform.position - cube1.transform.position);
+
+        while (elapsedTime < RollDuration)
+        {
+            float previousElapsedTime = elapsedTime;
+            elapsedTime = Mathf.Min(elapsedTime + Time.deltaTime, RollDuration);
+
+            float deltaAngle = angle *
+                ((elapsedTime - previousElapsedTime) / RollDuration);
+
+            transform.RotateAround(pivotOfRotation, axisOfRotation, deltaAngle);
+
+            yield return null;
+        }
+    }
+    private IEnumerator FallIntoHole()
+    {
+        UnconstrainRB();
+
+        yield return new WaitForSeconds(FallDuration);
+
+        PlayerFellIntoHole?.Invoke();
     }
     private Vector3 GetAxisOfRotation(Vector3 rollDirection)
     {
@@ -440,32 +371,32 @@ public class PlayerScript : MonoBehaviour
     private Vector3 GetPivotOfRotation(Vector3 rollDirection)
     {
         Vector3 pivotOfRotation = transform.position;
-        if (PlayerOrientation == Orientation.Y)
+        if (playerOrientation == Orientation.Y)
         {
-            pivotOfRotation += Vector3.down * FloorUnit + rollDirection * FloorUnit / 2;
+            pivotOfRotation += Vector3.down * StageUnit + rollDirection * StageUnit / 2;
         }
-        else if(PlayerOrientation == Orientation.X)
+        else if(playerOrientation == Orientation.X)
         {
-            pivotOfRotation += Vector3.down * FloorUnit / 2;
+            pivotOfRotation += Vector3.down * StageUnit / 2;
             if(rollDirection==Vector3.forward || rollDirection == Vector3.back)
             {
-                pivotOfRotation += rollDirection * FloorUnit / 2;
+                pivotOfRotation += rollDirection * StageUnit / 2;
             }
             else
             {
-                pivotOfRotation += rollDirection * FloorUnit;
+                pivotOfRotation += rollDirection * StageUnit;
             }
         }
         else
         {
-            pivotOfRotation += Vector3.down * FloorUnit / 2;
+            pivotOfRotation += Vector3.down * StageUnit / 2;
             if (rollDirection == Vector3.left || rollDirection == Vector3.right)
             {
-                pivotOfRotation += rollDirection * FloorUnit / 2;
+                pivotOfRotation += rollDirection * StageUnit / 2;
             }
             else
             {
-                pivotOfRotation += rollDirection * FloorUnit;
+                pivotOfRotation += rollDirection * StageUnit;
             }
         }
         return pivotOfRotation;
@@ -473,7 +404,7 @@ public class PlayerScript : MonoBehaviour
 
     private Orientation NextOrientation(Vector3 rollDirection)
     {
-        if(PlayerOrientation == Orientation.Y)
+        if(playerOrientation == Orientation.Y)
         {
             if(rollDirection == Vector3.left || rollDirection == Vector3.right)
             {
@@ -484,7 +415,7 @@ public class PlayerScript : MonoBehaviour
                 return Orientation.Z;
             }
         }
-        else if (PlayerOrientation == Orientation.X)
+        else if (playerOrientation == Orientation.X)
         {
             if(rollDirection == Vector3.left || rollDirection == Vector3.right)
             {
@@ -509,10 +440,11 @@ public class PlayerScript : MonoBehaviour
     }
     private void Correction()
     {
-        float x = RoundToUnit(transform.position.x, FloorUnit / 2);
-        float y = RoundToUnit(transform.position.y, FloorUnit / 2);
-        float z = RoundToUnit(transform.position.z, FloorUnit / 2);
+        float x = RoundToUnit(transform.position.x, StageUnit / 2);
+        float y = RoundToUnit(transform.position.y, StageUnit / 2);
+        float z = RoundToUnit(transform.position.z, StageUnit / 2);
         transform.position = new Vector3(x, y, z);
+
         x = RoundToUnit(transform.eulerAngles.x, 90);
         y = RoundToUnit(transform.eulerAngles.y, 90);
         z = RoundToUnit(transform.eulerAngles.z, 90);

@@ -287,14 +287,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 080af2170434a1142ae206d477ede562, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerScript
-  RollDuration: 0.2
-  initialLockDuration: 0.5
-  fallDuration: 2
-  rollForward: {fileID: -1753154209601861827, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
-  rollBack: {fileID: 2820822244389929930, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
-  rollLeft: {fileID: 4493800428232453159, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
-  rollRight: {fileID: 7032555096487140133, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
-  force: 100
+  RollDuration: 0.1
+  Gravity: -40
+  StageUnit: 1
+  StartFallHeight: 10
+  FallDuration: 1
+  RollForward: {fileID: -1753154209601861827, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
+  RollBack: {fileID: 2820822244389929930, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
+  RollLeft: {fileID: 4493800428232453159, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
+  RollRight: {fileID: 7032555096487140133, guid: 43fc0903987da3249b98347ea9fdcd96, type: 3}
 --- !u!54 &1501618905142939788
 Rigidbody:
   m_ObjectHideFlags: 0

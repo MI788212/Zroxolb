@@ -2228,7 +2228,6 @@ GameObject:
   - component: {fileID: 494358928}
   - component: {fileID: 494358930}
   - component: {fileID: 494358929}
-  - component: {fileID: 494358931}
   m_Layer: 5
   m_Name: StarPower
   m_TagString: Untagged
@@ -2357,19 +2356,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 494358927}
   m_CullTransparentMesh: 1
---- !u!114 &494358931
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 494358927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0c717c5098ebcc448543c398cac9dbe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameStatsUI
-  statsType: 5
 --- !u!1 &496446390 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7754073325158105813, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
@@ -4015,6 +4001,10 @@ MonoBehaviour:
   - StagePrefab: {fileID: 7776789401055835657, guid: c64490e5bd29d71439f32c59e4dc6f09, type: 3}
   - StagePrefab: {fileID: 7776789401055835657, guid: 5ffe93d4a0409b14988a50d161cacebb, type: 3}
   - StagePrefab: {fileID: 7776789401055835657, guid: f98c638d515d6df4e8ee5ee112be9f95, type: 3}
+  CurrentStageIndex: 0
+  CurrentStage:
+    StagePrefab: {fileID: 0}
+  InitialPlayerPosition: {x: 0, y: 0}
 --- !u!4 &951101872
 Transform:
   m_ObjectHideFlags: 0
@@ -5018,10 +5008,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3604749711143370402, guid: 5e4c502cd51674f47bad7e90904fa529, type: 3}
-      propertyPath: Gravity
-      value: -50
-      objectReference: {fileID: 0}
-    - target: {fileID: 3604749711143370402, guid: 5e4c502cd51674f47bad7e90904fa529, type: 3}
       propertyPath: gravity
       value: -50
       objectReference: {fileID: 0}
@@ -5030,15 +5016,7 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 494358929}
     - target: {fileID: 3604749711143370402, guid: 5e4c502cd51674f47bad7e90904fa529, type: 3}
-      propertyPath: FallDuration
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3604749711143370402, guid: 5e4c502cd51674f47bad7e90904fa529, type: 3}
       propertyPath: RollDuration
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3604749711143370402, guid: 5e4c502cd51674f47bad7e90904fa529, type: 3}
-      propertyPath: rollDuration
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3604749711143370402, guid: 5e4c502cd51674f47bad7e90904fa529, type: 3}

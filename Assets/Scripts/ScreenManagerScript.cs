@@ -68,7 +68,7 @@ public class ScreenManagerScript : MonoBehaviour
 
     private void updateScreenInfo()
     {
-        interStageText.text = "Stage " + stageManagerScript.CurrentStageIndex;
+        interStageText.text = "Stage " + stageManagerScript.currentStageIndex;
     }
 
     private void OnLastStageCleared()

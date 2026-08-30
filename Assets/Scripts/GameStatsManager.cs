@@ -10,7 +10,8 @@ public class GameStatsManager : MonoBehaviour
     internal float time;
     internal int stageIndex;
 
-    public event Action CurrentStatsUpdated;
+    public event Action<int> MovesUpdated;
+    public event Action<float> TimeUpdated;
 
     private PlayerScript playerScript;
     private StageManagerScript stageManagerScript;
@@ -25,12 +26,15 @@ public class GameStatsManager : MonoBehaviour
     {
         moves = 0;
         time = 0;
+
+        MovesUpdated?.Invoke(moves);
+        TimeUpdated?.Invoke(time);
     }
 
     private void Update()
     {
         time += Time.deltaTime;
-        CurrentStatsUpdated?.Invoke();
+        TimeUpdated?.Invoke(time);
     }
 
     private void OnEnable()
@@ -61,18 +65,19 @@ public class GameStatsManager : MonoBehaviour
     private void OnRolled()
     {
         moves++;
+        MovesUpdated(moves);
     }
 
-    private void OnStageLoaded()
+    private void OnStageLoaded(int _stageIndex)
     {
-        stageIndex = stageManagerScript.CurrentStageIndex;
+        stageIndex = _stageIndex;
         Initialize();
     }
 
     private void OnStageCleared()
     {
         UpdateStats();
-        string formattedTime = TimeSpan.FromSeconds(time).ToString(@"%h\:mm\:ss"); ;
+        //string formattedTime = TimeSpan.FromSeconds(time).ToString(@"%h\:mm\:ss");
         //Debug.Log("Stage cleared in " + moves + " moves and time: "+formattedTime);
 
     }
