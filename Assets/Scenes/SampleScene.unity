@@ -3978,7 +3978,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 951101872}
-  - component: {fileID: 951101871}
+  - component: {fileID: 951101873}
   m_Layer: 0
   m_Name: StageManager
   m_TagString: StageManager
@@ -3986,7 +3986,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &951101871
+--- !u!4 &951101872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951101870}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &951101873
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3995,9 +4010,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 951101870}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0fbfe2a70b361cb429ba5655dbe4a8f4, type: 3}
+  m_Script: {fileID: 11500000, guid: 452beef81347dbd4b81234accff39921, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FloorScript
+  m_EditorClassIdentifier: Assembly-CSharp::StageManager
   Stages:
   - StagePrefab: {fileID: 7776789401055835657, guid: 8b3de81fab5d72c44b853bc5989c2ae5, type: 3}
   - StagePrefab: {fileID: 7776789401055835657, guid: a53533ded1023f74087972ff267ff69c, type: 3}
@@ -4015,21 +4030,6 @@ MonoBehaviour:
   - StagePrefab: {fileID: 7776789401055835657, guid: c64490e5bd29d71439f32c59e4dc6f09, type: 3}
   - StagePrefab: {fileID: 7776789401055835657, guid: 5ffe93d4a0409b14988a50d161cacebb, type: 3}
   - StagePrefab: {fileID: 7776789401055835657, guid: f98c638d515d6df4e8ee5ee112be9f95, type: 3}
---- !u!4 &951101872
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 951101870}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &973433710 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7754073325158105813, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
@@ -4919,7 +4919,7 @@ PrefabInstance:
     - target: {fileID: 8075437158592634791, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 951101871}
+      objectReference: {fileID: 0}
     - target: {fileID: 8075437158592634791, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
