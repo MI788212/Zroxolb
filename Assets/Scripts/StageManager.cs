@@ -14,7 +14,7 @@ public class StageManager : MonoBehaviour
 
     private Player playerScript;
 
-    public event Action NextStageIntermission;
+    public event Action<int> LoadNewStage;
     public event Action LastStageCleared;
     public event Action<int> StageLoaded;
     public event Action StageCleared;
@@ -34,19 +34,19 @@ public class StageManager : MonoBehaviour
 
     private void OnEnable()
     {
-        playerScript.PlayerFellOffPlatform += GameOver;
+        playerScript.PlayerFellOffPlatform += LoadStage;
         playerScript.PlayerFellIntoHole += StageClear;
     }
 
     private void OnDisable()
     {
-        playerScript.PlayerFellOffPlatform -= GameOver;
+        playerScript.PlayerFellOffPlatform -= LoadStage;
         playerScript.PlayerFellIntoHole -= StageClear;
     }
 
     public void LoadStage()
     {
-        ClearStage();
+        UnloadStage();
 
         GameObject stage = Instantiate(currentStage.StagePrefab);
         stage.transform.SetParent(transform);
@@ -56,26 +56,6 @@ public class StageManager : MonoBehaviour
         StageLoaded?.Invoke(currentStageIndex);
     }
 
-    private void LoadNextStage()
-    {
-        NextStage();
-        NextStageIntermission?.Invoke();
-    }
-
-    private void NextStage()
-    {
-        currentStageIndex++;
-
-        if (currentStageIndex >= Stages.Count())
-        {
-            currentStageIndex--;
-            Debug.Log("trying to move onto next stage, but this is the last.");
-        }
-
-        currentStage = Stages.ElementAt(currentStageIndex);
-        initialPlayerPosition = currentStage.GetInitialPlayerPosition();
-    }
-
     public void LoadStage(int stageIndex)
     {
         SetStage(stageIndex);
@@ -83,16 +63,15 @@ public class StageManager : MonoBehaviour
     }
     public void SetStage(int stageIndex)
     {
+        if(stageIndex >= Stages.Count)
+        {
+            return;
+        }
+
         currentStageIndex = stageIndex;
 
         currentStage = Stages.ElementAt(currentStageIndex);
         initialPlayerPosition = currentStage.GetInitialPlayerPosition();
-    }
-
-    private void GameOver()
-    {
-        //Debug.Log("Game over.");
-        LoadStage();
     }
 
     private void StageClear()
@@ -113,10 +92,10 @@ public class StageManager : MonoBehaviour
             return;
         }
 
-        LoadNextStage();
+        LoadNewStage?.Invoke(currentStageIndex + 1);
     }
 
-    private void ClearStage()
+    private void UnloadStage()
     {
         foreach (Transform child in transform)
         {

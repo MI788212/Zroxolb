@@ -18,57 +18,55 @@ public class ScreenManager : MonoBehaviour
     public float interStageDuration = 2f;
     public TMP_Text interStageText;
 
-    private StageManager stageManagerScript;
+    private StageManager stageManager;
     private GameStatsManager gameStatsManager;
 
-    void Start()
+    void Awake()
     {
-        stageManagerScript = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
+        stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
         gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
 
-        HideCanvasChildren();
+        DeactivateScreens();
 
         ShowScreen(titleScreen);
+    }
 
-        stageManagerScript.NextStageIntermission += StageIntermission;
-        stageManagerScript.LastStageCleared += OnLastStageCleared;
+    private void OnEnable()
+    {
+        stageManager.LoadNewStage += OnLoadNewStage;
+        stageManager.LastStageCleared += OnLastStageCleared;
+    }
+
+    private void OnDisable()
+    {
+        stageManager.LoadNewStage -= OnLoadNewStage;
+        stageManager.LastStageCleared -= OnLastStageCleared;
     }
 
     public void StartNewGame()
     {
-        LoadStage(0);
+        OnLoadNewStage(0);
     }
 
-    public void LoadStage(int stageIndex)
+    public void OnLoadNewStage(int stageIndex)
     {
-        if (stageIndex >= stageManagerScript.Stages.Count)
+        if (stageIndex >= stageManager.Stages.Count)
         {
             return;
         }
 
-        stageManagerScript.SetStage(stageIndex);
-
-        StageIntermission();
+        StartCoroutine(InterstageAndLoad(stageIndex));
     }
 
-    private void StageIntermission()
+    private IEnumerator InterstageAndLoad(int stageIndex)
     {
-        StartCoroutine(InterStage());
-    }
-    private IEnumerator InterStage()
-    {
-        updateScreenInfo();
+        interStageText.text = "Stage " + stageIndex;
 
         ShowScreen(interStageScreen);
         yield return new WaitForSeconds(interStageDuration);
 
         ShowScreen(gameScreen);
-        stageManagerScript.LoadStage();
-    }
-
-    private void updateScreenInfo()
-    {
-        interStageText.text = "Stage " + stageManagerScript.currentStageIndex;
+        stageManager.LoadStage(stageIndex);
     }
 
     private void OnLastStageCleared()
@@ -80,22 +78,22 @@ public class ScreenManager : MonoBehaviour
         ShowScreen(congratulationsScreen);
     }
 
-    public void ShowScreen(GameObject screen)
-    {
-        //Debug.Log("Open " + screen);
-
-        HideCanvasChildren();
-
-        screen.SetActive(true);
-    }
-
     public void QuitGame()
     {
         Debug.Log("Quit game");
         Application.Quit();
     }
 
-    void HideCanvasChildren()
+    public void ShowScreen(GameObject screen)
+    {
+        //Debug.Log("Open " + screen);
+
+        DeactivateScreens();
+
+        screen.SetActive(true);
+    }
+
+    void DeactivateScreens()
     {
         foreach (Transform child in canvas.transform)
         {
