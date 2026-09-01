@@ -18,7 +18,7 @@ public class GameStatsManager : MonoBehaviour
     void Awake()
     {
         //Debug.Log("Game stats on!");
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        playerScript = FindAnyObjectByType<Player>(FindObjectsInactive.Include);
         stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
     }
 

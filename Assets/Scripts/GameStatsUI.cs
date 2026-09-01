@@ -15,7 +15,7 @@ public class GameStatsUI : MonoBehaviour
     {
         gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
         stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        playerScript = FindAnyObjectByType<Player>(FindObjectsInactive.Include);
         text = GetComponent<TMP_Text>();
     }
 

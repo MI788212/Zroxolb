@@ -11,7 +11,7 @@ public class StageManager : MonoBehaviour
     private Stage currentStage;
     private Vector2 initialPlayerPosition = new Vector2(0, 0);
 
-
+    public GameObject player;
     private Player playerScript;
 
     public event Action<int> LoadNewStage;
@@ -29,7 +29,8 @@ public class StageManager : MonoBehaviour
         {
             PlayerPrefs.SetInt(unlockedStagesKey, 1);
         }
-        playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        playerScript = player.GetComponent<Player>();
+        player.SetActive(false);
     }
 
     private void OnEnable()
@@ -47,6 +48,8 @@ public class StageManager : MonoBehaviour
     public void LoadStage()
     {
         UnloadStage();
+        player.SetActive(true);
+
 
         GameObject stage = Instantiate(currentStage.StagePrefab);
         stage.transform.SetParent(transform);
@@ -95,7 +98,7 @@ public class StageManager : MonoBehaviour
         LoadNewStage?.Invoke(currentStageIndex + 1);
     }
 
-    private void UnloadStage()
+    public void UnloadStage()
     {
         foreach (Transform child in transform)
         {
