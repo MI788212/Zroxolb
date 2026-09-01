@@ -21,10 +21,14 @@ public class ScreenManager : MonoBehaviour
     private StageManager stageManager;
     private GameStatsManager gameStatsManager;
 
+    private Player playerScript;
+    public GameObject titleScreenPlayer;
+
     void Awake()
     {
         stageManager = GameObject.FindGameObjectWithTag("StageManager").GetComponent<StageManager>();
         gameStatsManager = GameObject.FindGameObjectWithTag("GameStatsManager").GetComponent<GameStatsManager>();
+        playerScript = FindAnyObjectByType<Player>(FindObjectsInactive.Include);
 
         DeactivateScreens();
 
@@ -86,9 +90,25 @@ public class ScreenManager : MonoBehaviour
 
     public void ShowScreen(GameObject screen)
     {
-        //Debug.Log("Open " + screen);
+        Debug.Log("Open " + screen);
 
         DeactivateScreens();
+
+        if(screen != gameScreen && screen != menuScreen)
+        {
+            Debug.Log(341);
+            playerScript.gameObject.SetActive(false);
+            stageManager.UnloadStage();
+        }
+
+        if(screen == titleScreen)
+        {
+            titleScreenPlayer.SetActive(true);
+        }
+        else
+        {
+            titleScreenPlayer.SetActive(false);
+        }
 
         screen.SetActive(true);
     }
