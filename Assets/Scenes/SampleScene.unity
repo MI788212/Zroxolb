@@ -4762,7 +4762,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1016850915
 Transform:
   m_ObjectHideFlags: 0
@@ -5080,7 +5080,7 @@ PrefabInstance:
     - target: {fileID: 8075437158592634791, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 951101873}
     - target: {fileID: 8075437158592634791, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
@@ -5107,7 +5107,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8075437158592634791, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: StageManagerScript, Assembly-CSharp
+      value: StageManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 8075437158592634791, guid: 502162032cd70d442b5c9f62e365c42b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
